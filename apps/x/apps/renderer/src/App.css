@@ -1,0 +1,2929 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Required for Streamdown markdown rendering (bullet points, lists, etc.) */
+@source "../node_modules/streamdown/dist/*.js";
+
+@custom-variant dark (&:is(.dark *));
+
+#root {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Radix Collapsible expand/collapse — animate height (via the radix CSS var)
+   plus a subtle fade. Used by the web search card. */
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Premium page motion + loading states */
+.premium-page-enter {
+  animation: premium-page-enter 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.premium-scroll-reveal {
+  opacity: 0;
+  transform: translateY(14px) scale(0.992);
+  transition:
+    opacity 420ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 420ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+  will-change: opacity, transform;
+}
+
+.premium-scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.premium-skeleton,
+.premium-skeleton-card,
+.premium-skeleton-row {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(100deg, transparent 0%, color-mix(in oklab, var(--foreground) 5.5%, transparent) 42%, color-mix(in oklab, var(--foreground) 12%, transparent) 50%, color-mix(in oklab, var(--foreground) 5.5%, transparent) 58%, transparent 100%),
+    color-mix(in oklab, var(--foreground) 5.5%, transparent);
+  background-size: 220% 100%, 100% 100%;
+  animation: premium-shimmer 1.15s linear infinite;
+}
+
+.premium-skeleton {
+  border-radius: 999px;
+}
+
+.premium-skeleton-panel {
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border) 68%, transparent);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 0%, color-mix(in oklab, var(--primary) 8%, transparent), transparent 34%),
+    color-mix(in oklab, var(--card) 94%, transparent);
+  box-shadow: 0 18px 60px color-mix(in oklab, var(--foreground) 4.5%, transparent);
+}
+
+.premium-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background-color: transparent;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+}
+
+.premium-skeleton-row:last-child {
+  border-bottom: 0;
+}
+
+.premium-skeleton-card {
+  min-height: 172px;
+  border: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
+  border-radius: 20px;
+  padding: 18px;
+  background-color: color-mix(in oklab, var(--card) 94%, transparent);
+  box-shadow: 0 18px 50px color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.premium-empty-state {
+  position: relative;
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid color-mix(in oklab, var(--border) 62%, transparent);
+  border-radius: 24px;
+  padding: 42px 28px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 38%),
+    linear-gradient(180deg, color-mix(in oklab, var(--card) 90%, transparent), color-mix(in oklab, var(--background) 72%, transparent));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 4.5%, transparent), 0 24px 70px color-mix(in oklab, var(--foreground) 4.5%, transparent);
+}
+
+.premium-empty-state__orb {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  border-radius: 18px;
+  color: var(--primary);
+  background:
+    radial-gradient(circle at 35% 25%, color-mix(in oklab, var(--primary) 28%, transparent), transparent 44%),
+    color-mix(in oklab, var(--primary) 8%, transparent);
+  box-shadow: 0 14px 40px color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
+.premium-lift {
+  transition:
+    transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.premium-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 45px color-mix(in oklab, var(--foreground) 7%, transparent);
+}
+
+.premium-lift:active {
+  transform: translateY(0) scale(0.99);
+}
+
+@keyframes premium-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.996);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes premium-shimmer {
+  from {
+    background-position: 180% 0, 0 0;
+  }
+  to {
+    background-position: -40% 0, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-page-enter,
+  .premium-skeleton,
+  .premium-skeleton-card,
+  .premium-skeleton-row {
+    animation: none;
+  }
+
+  .premium-scroll-reveal,
+  .premium-scroll-reveal.is-visible,
+  .premium-lift,
+  .premium-lift:hover,
+  .premium-lift:active {
+    transform: none;
+    transition: none;
+  }
+
+  .premium-scroll-reveal {
+    opacity: 1;
+  }
+}
+
+/* Onboarding dot grid background */
+.onboarding-dot-grid {
+  background-image: radial-gradient(circle, oklch(0.5 0 0 / 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .onboarding-dot-grid {
+  background-image: radial-gradient(circle, oklch(0.7 0 0 / 0.06) 1px, transparent 1px);
+}
+
+.gmail-shell {
+  --gm-bg: #020302;
+  --gm-bg-card: #080b08;
+  --gm-bg-input: rgba(255, 255, 255, 0.035);
+  --gm-bg-row-hover: rgba(57, 255, 20, 0.045);
+  --gm-bg-row-selected: rgba(57, 255, 20, 0.075);
+  --gm-bg-row-selected-hover: rgba(57, 255, 20, 0.1);
+  --gm-bg-iframe: #fafafa;
+  --gm-bg-pill: rgba(255, 255, 255, 0.045);
+  --gm-bg-pill-hover: rgba(57, 255, 20, 0.08);
+  --gm-text: #e4e4e7;
+  --gm-text-strong: #fafafa;
+  --gm-text-muted: #71717a;
+  --gm-text-faint: #52525b;
+  --gm-text-body: #d4d4d8;
+  --gm-border: rgba(255, 255, 255, 0.08);
+  --gm-border-strong: rgba(255, 255, 255, 0.14);
+  --gm-accent: #39ff14;
+  --gm-accent-hover: #9dff00;
+  --gm-accent-glow: rgba(57, 255, 20, 0.4);
+  --gm-accent-fg: #031003;
+  --gm-icon-hover-bg: rgba(57, 255, 20, 0.08);
+  --gm-placeholder: #52525b;
+
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(57, 255, 20, 0.07), transparent 24%),
+    radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.04), transparent 18%),
+    var(--gm-bg);
+  color: var(--gm-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.light .gmail-shell {
+  --gm-bg: #ffffff;
+  --gm-bg-card: #ffffff;
+  --gm-bg-input: #f4f4f7;
+  --gm-bg-row-hover: #f7f7f9;
+  --gm-bg-row-selected: #f5f0ff;
+  --gm-bg-row-selected-hover: #ece4ff;
+  --gm-bg-iframe: #ffffff;
+  --gm-bg-pill: #ffffff;
+  --gm-bg-pill-hover: #f4f4f7;
+  --gm-text: #27272a;
+  --gm-text-strong: #09090b;
+  --gm-text-muted: #71717a;
+  --gm-text-faint: #a1a1aa;
+  --gm-text-body: #3f3f46;
+  --gm-border: #e4e4e7;
+  --gm-border-strong: #d4d4d8;
+  --gm-accent: #7c3aed;
+  --gm-accent-hover: #6d28d9;
+  --gm-accent-glow: rgba(124, 58, 237, 0.3);
+  --gm-accent-fg: #ffffff;
+  --gm-icon-hover-bg: #f4f4f7;
+  --gm-placeholder: #a1a1aa;
+}
+
+.gmail-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 0;
+}
+
+.gmail-outreach-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px 14px;
+}
+
+.gmail-outreach-hero-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.gmail-outreach-orb {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(57, 255, 20, 0.24);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle, rgba(57, 255, 20, 0.24), rgba(57, 255, 20, 0.07) 58%, transparent 72%);
+  color: var(--gm-accent);
+  box-shadow:
+    0 0 0 8px rgba(57, 255, 20, 0.035),
+    0 0 28px rgba(57, 255, 20, 0.18);
+}
+
+.gmail-outreach-hero h1 {
+  margin: 0;
+  color: var(--gm-text-strong);
+  font-size: 27px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.gmail-outreach-hero p {
+  margin: 8px 0 0;
+  color: color-mix(in oklab, var(--gm-text-muted) 88%, white 12%);
+  font-size: 13px;
+}
+
+.gmail-outreach-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gmail-outreach-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 24px 16px;
+}
+
+.gmail-outreach-stat {
+  min-height: 78px;
+  border: 1px solid var(--gm-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    var(--gm-bg-card);
+  padding: 14px 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 30px rgba(0, 0, 0, 0.3);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gmail-outreach-stat:hover {
+  transform: translateY(-2px);
+  border-color: rgba(57, 255, 20, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 36px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(57, 255, 20, 0.05);
+}
+
+.gmail-outreach-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 100% 0%, rgba(57, 255, 20, 0.08), transparent 50%);
+  opacity: 0;
+  transition: opacity 250ms ease;
+  pointer-events: none;
+}
+
+.gmail-outreach-stat:hover::before {
+  opacity: 1;
+}
+
+.gmail-outreach-stat span {
+  display: block;
+  color: color-mix(in oklab, var(--gm-text-muted) 85%, white 15%);
+  font-size: 11px;
+  font-weight: 500;
+  position: relative;
+  z-index: 10;
+}
+
+.gmail-outreach-stat strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--gm-text-strong);
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  position: relative;
+  z-index: 10;
+}
+
+.gmail-outreach-stat em {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 7px;
+  color: color-mix(in oklab, var(--gm-accent) 75%, white 10%);
+  font-size: 10px;
+  font-style: normal;
+  position: relative;
+  z-index: 10;
+}
+
+.gmail-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--gm-border);
+}
+
+.gmail-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, 38vw);
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--gm-border);
+  border-radius: 12px;
+  background: var(--gm-bg-input);
+  color: var(--gm-text-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.gmail-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--gm-text);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.gmail-search input::placeholder {
+  color: var(--gm-placeholder);
+}
+
+.gmail-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--gm-border);
+  border-radius: 12px;
+  background: var(--gm-bg-input);
+  color: var(--gm-text-muted);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.gmail-icon-button:hover {
+  background: var(--gm-icon-hover-bg);
+  color: var(--gm-text);
+}
+
+.gmail-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  margin: 0 24px 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01)),
+    var(--gm-bg-card);
+  border: none;
+  border: 1px solid var(--gm-border);
+  border-radius: 14px;
+}
+
+.gmail-row-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.gmail-list-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 18px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid var(--gm-border);
+  color: var(--gm-text-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gmail-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.gmail-section + .gmail-section {
+  margin-top: 0;
+  border-top: 1px solid var(--gm-border);
+}
+
+.gmail-section-sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  color: var(--gm-text-faint);
+}
+
+.gmail-row-shell {
+  position: relative;
+}
+
+.gmail-row {
+  display: grid;
+  grid-template-columns: 12px minmax(140px, 0.22fr) minmax(0, 1fr) 60px;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 18px;
+  border: none;
+  background: transparent;
+  color: var(--gm-text-muted);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 120ms ease;
+}
+
+.gmail-row-actions {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.gmail-row-shell:hover .gmail-row-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.gmail-row-shell:hover .gmail-row-date {
+  visibility: hidden;
+}
+
+.gmail-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--gm-text-muted);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.gmail-row-action:hover {
+  background: var(--gm-bg-pill-hover);
+  color: var(--gm-text-strong);
+}
+
+.gmail-row-action-danger:hover {
+  color: #e8453c;
+}
+
+.gmail-row:hover {
+  background: var(--gm-bg-row-hover);
+  box-shadow: none;
+}
+
+.gmail-row-selected {
+  background: var(--gm-bg-row-selected);
+  box-shadow: inset 3px 0 0 var(--gm-accent);
+}
+
+.gmail-row-selected:hover {
+  background: var(--gm-bg-row-selected-hover);
+}
+
+.gmail-row-unread {
+  color: var(--gm-text);
+}
+
+.gmail-row-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.gmail-row-unread .gmail-row-dot {
+  background: var(--gm-accent);
+  box-shadow: 0 0 8px var(--gm-accent-glow);
+}
+
+.gmail-row-sender,
+.gmail-row-content strong,
+.gmail-row-date {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+
+.gmail-row-unread .gmail-row-sender,
+.gmail-row-unread .gmail-row-content strong {
+  font-weight: 600;
+  color: var(--gm-text-strong);
+}
+
+.gmail-row-unread .gmail-row-date {
+  color: var(--gm-text);
+}
+
+.gmail-row-sender,
+.gmail-row-content,
+.gmail-row-content span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gmail-row-content {
+  display: flex;
+  gap: 8px;
+  color: var(--gm-text-faint);
+  font-size: 13px;
+}
+
+.gmail-row-content strong {
+  flex-shrink: 0;
+  color: inherit;
+  font-weight: 400;
+}
+
+.gmail-row-date {
+  justify-self: end;
+  color: var(--gm-text-faint);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gmail-detail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  background: transparent;
+}
+
+.gmail-detail-inline {
+  background: var(--gm-bg-card);
+  border-top: 1px solid var(--gm-border);
+  border-bottom: 1px solid var(--gm-border);
+  box-shadow: inset 2px 0 0 var(--gm-accent);
+}
+
+.gmail-detail-hidden {
+  display: none;
+}
+
+.gmail-detail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 48px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--gm-border);
+  background: transparent;
+}
+
+.gmail-thread-subject-inline {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gm-text-strong);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.gmail-thread-body {
+  padding: 20px 24px 28px;
+  background: transparent;
+}
+
+.gmail-thread-summary {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gm-border);
+}
+
+.gmail-thread-summary-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--gm-text-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gmail-thread-summary-text {
+  display: block;
+  color: var(--gm-text);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.gmail-message-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gmail-message {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--gm-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.005);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease;
+}
+
+.gmail-message:first-child {
+  padding-top: 16px;
+}
+
+.gmail-message:hover {
+  background: rgba(255, 255, 255, 0.012);
+  border-color: var(--gm-border-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.gmail-message-expanded {
+  background: rgba(255, 255, 255, 0.01);
+  border-color: var(--gm-border-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.gmail-message-header {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gmail-message-snippet {
+  margin-top: 4px;
+  color: var(--gm-text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gmail-message:not(.gmail-message-expanded) .gmail-message-header:hover .gmail-message-from strong {
+  color: var(--gm-accent);
+}
+
+.gmail-message-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #fafafa;
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.gmail-message-main {
+  min-width: 0;
+}
+
+.gmail-message-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gmail-message-from {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gmail-message-from strong,
+.gmail-message-from span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gmail-message-from strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--gm-text-strong);
+  letter-spacing: -0.005em;
+}
+
+.gmail-message-from span,
+.gmail-message-to,
+.gmail-message-cc,
+.gmail-message-date {
+  color: var(--gm-text-muted);
+  font-size: 12px;
+}
+
+.gmail-message-date {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gmail-message-iframe {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  margin-top: 12px;
+  border: 1px solid var(--gm-border-strong);
+  background: #ffffff; /* Always light background for styled HTML email frames */
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gmail-message-iframe:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.gmail-message-iframe-adaptive {
+  background: var(--gm-bg-card);
+  border-color: var(--gm-border);
+  box-shadow: none;
+}
+
+.gmail-message-iframe-adaptive:hover {
+  border-color: var(--gm-border-strong);
+}
+
+.gmail-message-plain {
+  max-width: 820px;
+  margin-top: 12px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid var(--gm-border);
+  border-radius: 12px;
+  color: var(--gm-text);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.gmail-message-plain:hover {
+  border-color: var(--gm-border-strong);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.light .gmail-message-plain {
+  background: #f4f4f7;
+  border-color: #e4e4e7;
+  color: #27272a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.light .gmail-message-plain:hover {
+  background: #eaeaea;
+  border-color: #d4d4d8;
+}
+
+.gmail-message-pre {
+  margin: 0;
+  font: 14px/1.6 Arial, sans-serif;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.gmail-message-pre-quoted {
+  margin-top: 12px;
+  color: var(--gm-text-muted);
+}
+
+.gmail-quote-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  height: 22px;
+  padding: 0 10px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 4px;
+  background: var(--gm-bg-pill);
+  color: var(--gm-text-muted);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.gmail-quote-toggle:hover {
+  background: var(--gm-bg-pill-hover);
+  color: var(--gm-text-strong);
+  border-color: var(--gm-border-strong);
+}
+
+.gmail-quote-toggle[aria-expanded="true"] {
+  background: var(--gm-bg-row-selected);
+  color: var(--gm-accent);
+  border-color: var(--gm-accent);
+}
+
+.gmail-message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  max-width: 820px;
+}
+
+.gmail-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+  padding: 6px 10px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 6px;
+  background: var(--gm-bg-pill);
+  color: var(--gm-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.gmail-attachment:hover {
+  background: var(--gm-bg-pill-hover);
+  border-color: var(--gm-accent);
+  color: var(--gm-accent);
+}
+
+.gmail-attachment-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.gmail-attachment-size {
+  flex-shrink: 0;
+  color: var(--gm-text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gmail-thread-actions {
+  display: flex;
+  gap: 10px;
+  margin: 24px 0 16px 40px;
+}
+
+.gmail-thread-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--gm-text-body);
+  font-weight: 500;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gmail-thread-actions button:hover {
+  background: var(--gm-accent);
+  border-color: var(--gm-accent);
+  color: var(--gm-accent-fg);
+  box-shadow: 0 0 12px var(--gm-accent-glow);
+}
+
+.gmail-compose-card {
+  max-width: 720px;
+  margin-left: 40px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--gm-bg-card);
+}
+
+.gmail-compose-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 12px;
+  background: var(--gm-bg-input);
+  color: var(--gm-text-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.gmail-compose-header button,
+.gmail-compose-link {
+  border: none;
+  background: transparent;
+  color: var(--gm-text-muted);
+  cursor: pointer;
+}
+
+.gmail-compose-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--gm-border);
+  color: var(--gm-text-muted);
+  font-size: 12px;
+}
+
+.gmail-compose-line input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--gm-text);
+  font: inherit;
+}
+
+.gmail-compose-label {
+  flex: none;
+  min-width: 28px;
+  color: var(--gm-text-muted);
+}
+
+.gmail-compose-subject-input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--gm-text);
+  font: inherit;
+}
+
+/* Recipient (To / Cc / Bcc) rows with editable chips */
+.gmail-recipient-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 34px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--gm-border);
+  font-size: 13px;
+}
+
+.gmail-recipient-label {
+  flex: none;
+  min-width: 28px;
+  padding-top: 5px;
+  color: var(--gm-text-muted);
+}
+
+.gmail-recipient-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.gmail-recipient-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 4px 0 10px;
+  border-radius: 12px;
+  background: var(--gm-bg-pill);
+  color: var(--gm-text);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.gmail-recipient-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+.gmail-recipient-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gm-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gmail-recipient-chip-remove:hover {
+  background: var(--gm-bg-pill-hover);
+  color: var(--gm-text);
+}
+
+.gmail-recipient-input {
+  flex: 1 1 80px;
+  min-width: 80px;
+  height: 24px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--gm-text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.gmail-recipient-trailing {
+  flex: none;
+  padding-top: 5px;
+}
+
+.gmail-recipient-toggles {
+  display: flex;
+  gap: 10px;
+}
+
+.gmail-recipient-toggles button {
+  border: none;
+  background: transparent;
+  color: var(--gm-text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gmail-recipient-toggles button:hover {
+  color: var(--gm-text);
+  text-decoration: underline;
+}
+
+.gmail-compose-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+
+.gmail-compose-link-popover {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--gm-border);
+  background: var(--gm-bg-input);
+}
+
+.gmail-compose-link-popover input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 4px;
+  background: var(--gm-bg-card);
+  color: var(--gm-text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.gmail-compose-link-popover input:focus {
+  border-color: var(--gm-accent);
+}
+
+.gmail-compose-link-popover button {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 4px;
+  background: var(--gm-bg-pill);
+  color: var(--gm-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gmail-compose-link-popover button:hover {
+  background: var(--gm-bg-pill-hover);
+}
+
+.gmail-compose-link-popover-apply {
+  background: var(--gm-accent) !important;
+  border-color: var(--gm-accent) !important;
+  color: var(--gm-accent-fg) !important;
+  font-weight: 600;
+}
+
+.gmail-compose-link-popover-apply:hover {
+  background: var(--gm-accent-hover) !important;
+  border-color: var(--gm-accent-hover) !important;
+}
+
+.gmail-compose-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--gm-text-muted);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.gmail-compose-tool:hover {
+  background: var(--gm-bg-pill-hover);
+  color: var(--gm-text);
+}
+
+.gmail-compose-tool.is-active {
+  background: var(--gm-bg-pill-hover);
+  color: var(--gm-accent);
+}
+
+.gmail-compose-tool-sep {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: var(--gm-border-strong);
+}
+
+.gmail-compose-editor {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.gmail-compose-content {
+  outline: none;
+  min-height: 120px;
+  padding: 12px;
+  background: transparent;
+  color: var(--gm-text);
+  font: 13px/1.55 inherit;
+}
+
+.gmail-compose-content p {
+  margin: 0;
+}
+
+.gmail-compose-content p + p,
+.gmail-compose-content p + ul,
+.gmail-compose-content p + ol,
+.gmail-compose-content p + blockquote {
+  margin-top: 8px;
+}
+
+.gmail-compose-content ul,
+.gmail-compose-content ol {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.gmail-compose-content ul {
+  list-style: disc;
+}
+
+.gmail-compose-content ol {
+  list-style: decimal;
+}
+
+.gmail-compose-content li {
+  margin: 2px 0;
+}
+
+.gmail-compose-content li > p {
+  margin: 0;
+}
+
+.gmail-compose-content blockquote {
+  margin: 4px 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--gm-border-strong);
+  color: var(--gm-text-muted);
+}
+
+.gmail-compose-content a {
+  color: var(--gm-accent);
+  text-decoration: underline;
+}
+
+.gmail-compose-content code {
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--gm-bg-pill-hover);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.gmail-compose-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--gm-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.gmail-compose-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--gm-border);
+}
+
+.gmail-compose-actions-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gmail-refine-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--gm-border-strong);
+  border-radius: 6px;
+  background: var(--gm-bg-pill);
+  color: var(--gm-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.gmail-refine-button:hover {
+  background: var(--gm-bg-pill-hover);
+  border-color: var(--gm-accent);
+  color: var(--gm-accent);
+}
+
+.gmail-send-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--gm-accent);
+  color: var(--gm-accent-fg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gmail-send-button:hover {
+  background: var(--gm-accent-hover);
+}
+
+.gmail-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+  color: var(--gm-text-faint);
+  font-size: 13px;
+}
+
+/* ============================================================================
+   Unified Recruiting Inbox Overrides
+   ============================================================================ */
+
+/* Force row stack of header + panels */
+.gmail-shell {
+  flex-direction: column !important;
+}
+
+/* Override email-view component class layout variables */
+.gmail-detail-view .gmail-compose-card {
+  margin-left: 0 !important;
+  max-width: none !important;
+}
+
+/* Scrollbar customizations for recruiter panels */
+.inbox-filters-panel::-webkit-scrollbar,
+.gmail-detail-view::-webkit-scrollbar,
+.gmail-message-stack::-webkit-scrollbar,
+.gmail-compose-editor::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.inbox-filters-panel::-webkit-scrollbar-track,
+.gmail-detail-view::-webkit-scrollbar-track,
+.gmail-message-stack::-webkit-scrollbar-track,
+.gmail-compose-editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inbox-filters-panel::-webkit-scrollbar-thumb,
+.gmail-detail-view::-webkit-scrollbar-thumb,
+.gmail-message-stack::-webkit-scrollbar-thumb,
+.gmail-compose-editor::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 99px;
+}
+
+.inbox-filters-panel::-webkit-scrollbar-thumb:hover,
+.gmail-detail-view::-webkit-scrollbar-thumb:hover,
+.gmail-message-stack::-webkit-scrollbar-thumb:hover,
+.gmail-compose-editor::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Selected row custom animations */
+.gmail-row-shell-selected {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Compose card refinements */
+.gmail-compose-card .gmail-compose-content {
+  min-height: 80px !important;
+  padding: 10px 12px;
+}
+
+.gmail-compose-card .gmail-recipient-row {
+  min-height: 28px;
+  padding: 4px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.gmail-compose-card .gmail-recipient-chip {
+  padding: 0 6px;
+  border-radius: 4px;
+  height: 18px;
+  line-height: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: var(--bg-color, oklch(1 0 0));
+  --foreground: var(--text-color, oklch(0.145 0 0));
+  --card: var(--bg-color, oklch(1 0 0));
+  --card-foreground: var(--text-color, oklch(0.145 0 0));
+  --popover: var(--bg-color, oklch(1 0 0));
+  --popover-foreground: var(--text-color, oklch(0.145 0 0));
+  --primary: var(--main-color, oklch(0.205 0 0));
+  --primary-foreground: var(--bg-color, oklch(0.985 0 0));
+  --secondary: var(--sub-alt-color, oklch(0.97 0 0));
+  --secondary-foreground: var(--text-color, oklch(0.205 0 0));
+  --muted: var(--sub-alt-color, oklch(0.97 0 0));
+  --muted-foreground: var(--sub-color, oklch(0.556 0 0));
+  --accent: var(--sub-color, oklch(0.97 0 0));
+  --accent-foreground: var(--text-color, oklch(0.205 0 0));
+  --destructive: var(--error-color, oklch(0.577 0.245 27.325));
+  --border: var(--sub-alt-color, oklch(0.922 0 0));
+  --input: var(--sub-alt-color, oklch(0.922 0 0));
+  --ring: var(--main-color, oklch(0.708 0 0));
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: var(--bg-color, oklch(0.985 0 0));
+  --sidebar-foreground: var(--text-color, oklch(0.145 0 0));
+  --sidebar-primary: var(--main-color, oklch(0.205 0 0));
+  --sidebar-primary-foreground: var(--bg-color, oklch(0.985 0 0));
+  --sidebar-accent: var(--sub-color, oklch(0.9 0 0));
+  --sidebar-accent-foreground: var(--text-color, oklch(0.205 0 0));
+  --sidebar-border: var(--sub-alt-color, oklch(0.922 0 0));
+  --sidebar-ring: var(--main-color, oklch(0.708 0 0));
+  --scrollbar-track: oklch(0.95 0 0);
+  --scrollbar-thumb: oklch(0.75 0 0);
+  --scrollbar-thumb-hover: oklch(0.65 0 0);
+  /* Subtle raised-card surface: tints toward foreground, so it reads a hair
+     darker than the background in light mode and a hair lighter in dark mode.
+     Shared by the web search card and tool-call group. */
+  --card-surface: color-mix(in oklab, var(--background) 98.5%, var(--foreground));
+  --jobraker-recruiter-panel: oklch(0.97 0 0);
+  --jobraker-recruiter-raised: oklch(1 0 0);
+  --jobraker-recruiter-wash: color-mix(in oklab, var(--background) 88%, var(--primary) 12%);
+  --jobraker-recruiter-hairline: color-mix(in oklab, var(--border) 78%, var(--foreground) 22%);
+  --jobraker-recruiter-command: oklch(0.205 0 0);
+  --jobraker-recruiter-attention: oklch(0.646 0.222 41.116);
+  --jobraker-recruiter-shadow: 0 1px 2px rgb(31 38 48 / 0.07), 0 18px 40px rgb(31 38 48 / 0.08);
+  --jobraker-recruiter-shadow-soft: 0 1px 2px rgb(31 38 48 / 0.05), 0 8px 24px rgb(31 38 48 / 0.06);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: var(--bg-color, oklch(0 0 0));
+  --foreground: var(--text-color, oklch(0.98 0.01 250));
+  --card: var(--bg-color, oklch(0 0 0));
+  --card-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --popover: var(--bg-color, oklch(0.14 0.02 260));
+  --popover-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --primary: var(--main-color, oklch(0.87 0.28 142));
+  --primary-foreground: var(--bg-color, oklch(0.16 0 0));
+  --secondary: var(--sub-alt-color, oklch(0.22 0.02 260));
+  --secondary-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --muted: var(--sub-alt-color, oklch(0.22 0.02 260));
+  --muted-foreground: var(--sub-color, oklch(0.68 0.02 260));
+  --accent: var(--sub-color, oklch(0.22 0.02 260));
+  --accent-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --destructive: var(--error-color, oklch(0.87 0.28 142));
+  --border: var(--sub-alt-color, oklch(0.22 0.02 260));
+  --input: var(--sub-alt-color, oklch(0.22 0.02 260));
+  --ring: var(--main-color, oklch(0.87 0.28 142));
+  --chart-1: oklch(0.87 0.28 142);
+  --chart-2: oklch(0.78 0.27 143);
+  --chart-3: oklch(0.68 0.2 142);
+  --chart-4: oklch(0.58 0.16 142);
+  --chart-5: oklch(0.48 0.12 142);
+  --sidebar: var(--bg-color, oklch(0 0 0));
+  --sidebar-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --sidebar-primary: var(--main-color, oklch(0.87 0.28 142));
+  --sidebar-primary-foreground: var(--bg-color, oklch(0.16 0 0));
+  --sidebar-accent: var(--sub-color, oklch(0.22 0.02 260));
+  --sidebar-accent-foreground: var(--text-color, oklch(0.98 0.01 250));
+  --sidebar-border: var(--sub-alt-color, oklch(0.22 0.02 260));
+  --sidebar-ring: var(--main-color, oklch(0.87 0.28 142));
+  --scrollbar-track: oklch(0.08 0 0);
+  --scrollbar-thumb: oklch(0.87 0.28 142 / 0.34);
+  --scrollbar-thumb-hover: oklch(0.87 0.28 142 / 0.6);
+  --card-surface: color-mix(in oklab, var(--background) 92%, var(--foreground));
+  --jobraker-recruiter-panel: oklch(0.18 0 0);
+  --jobraker-recruiter-raised: oklch(0.1 0 0);
+  --jobraker-recruiter-wash: color-mix(in oklab, var(--background) 80%, var(--primary) 20%);
+  --jobraker-recruiter-hairline: color-mix(in oklab, var(--border) 70%, var(--foreground) 30%);
+  --jobraker-recruiter-command: oklch(0.98 0.01 250);
+  --jobraker-recruiter-attention: oklch(0.87 0.28 142);
+  --jobraker-recruiter-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 22px 44px rgb(0 0 0 / 0.45);
+  --jobraker-recruiter-shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 28px rgb(0 0 0 / 0.35);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: Questrial, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+}
+
+.jobraker-recruiter-shell {
+  background: var(--background);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="sidebar"] {
+  background: color-mix(in oklab, var(--card) 95%, transparent);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="header"] {
+  position: relative;
+  gap: 0.75rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  background: transparent;
+  padding-bottom: 0.75rem;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="header"]::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in oklab, var(--brand) 50%, transparent),
+    transparent
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="content"] {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--border) 85%, transparent) transparent;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="content"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--border) 85%, transparent);
+  border-radius: 10px;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+
+.jobraker-sidebar-section-label {
+  margin-bottom: 0.5rem;
+  padding-inline: 0.75rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu"] {
+  gap: 0.25rem;
+  padding-inline: 0.25rem;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"] {
+  position: relative;
+  overflow: hidden;
+  min-height: 2.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  padding-inline: 1rem;
+  font-weight: 500;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"]:not([data-active="true"]) {
+  color: color-mix(in oklab, var(--foreground) 60%, transparent);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"]:not([data-active="true"]):hover {
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  color: color-mix(in oklab, var(--foreground) 88%, transparent);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"][data-active="true"] {
+  border-color: color-mix(in oklab, var(--brand) 20%, transparent);
+  background: color-mix(in oklab, var(--brand) 10%, transparent) !important;
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"][data-active="true"]::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 3px;
+  border-radius: 999px 0 0 999px;
+  background: var(--brand);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--brand) 55%, transparent);
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"] svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"][data-active="true"] svg {
+  color: var(--brand);
+}
+
+.jobraker-recruiter-sidebar .jobraker-sidebar-divider {
+  margin-block: 0.75rem;
+  margin-inline: 0.75rem;
+  border-top: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+.jobraker-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.875rem;
+  border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+  padding: 0.5rem 0.625rem;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.jobraker-sidebar-profile:hover {
+  border-color: color-mix(in oklab, var(--brand) 35%, transparent);
+  background: color-mix(in oklab, var(--brand) 8%, transparent);
+}
+
+.jobraker-sidebar-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--brand) 85%, white 5%),
+    color-mix(in oklab, var(--brand) 55%, black 25%)
+  );
+  color: #04140a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.jobraker-sidebar-avatar-dot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--brand);
+  border: 2px solid var(--card);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--brand) 60%, transparent);
+}
+
+.jobraker-sidebar-badge-new {
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--brand) 20%, transparent);
+  color: var(--brand);
+  padding: 0.0625rem 0.4375rem;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.jobraker-recruiter-sidebar [data-sidebar="menu-button"].jobraker-sidebar-favorite {
+  min-height: 2.125rem;
+  font-weight: 500;
+}
+
+.jobraker-sidebar-favorite-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in oklab, var(--foreground) 35%, transparent);
+  background: transparent;
+}
+
+.jobraker-sidebar-favorite-dot--active {
+  border-color: var(--brand);
+  background: var(--brand);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--brand) 55%, transparent);
+}
+
+/* ───────────────────────── Recruiter dashboards ───────────────────────── */
+
+.recruiter-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--brand) 35%, transparent) transparent;
+}
+.recruiter-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.recruiter-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.recruiter-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--border) 90%, transparent);
+  border-radius: 10px;
+}
+.recruiter-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--brand) 45%, transparent);
+}
+
+@keyframes recruiter-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.recruiter-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--foreground) 4%, transparent) 25%,
+    color-mix(in oklab, var(--foreground) 10%, transparent) 37%,
+    color-mix(in oklab, var(--foreground) 4%, transparent) 63%
+  );
+  background-size: 200% 100%;
+  animation: recruiter-shimmer 1.4s ease-in-out infinite;
+}
+
+.recruiter-card {
+  position: relative;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 3%, transparent),
+      color-mix(in oklab, var(--foreground) 1%, transparent)
+    );
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.recruiter-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 22%, transparent);
+}
+
+.recruiter-new-btn {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--brand) 30%, transparent),
+    0 8px 24px color-mix(in oklab, var(--brand) 22%, transparent);
+}
+
+.recruiter-search input:focus {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 12%, transparent);
+}
+
+.recruiter-kpi {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.recruiter-kpi:hover {
+  border-color: color-mix(in oklab, var(--brand) 28%, transparent);
+  transform: translateY(-2px);
+}
+.recruiter-kpi::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 80% at 100% 0%,
+    color-mix(in oklab, var(--brand) 9%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.recruiter-kpi:hover::after {
+  opacity: 1;
+}
+
+.recruiter-row {
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.recruiter-row:hover {
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+.recruiter-row[data-selected="true"] {
+  background: color-mix(in oklab, var(--brand) 9%, transparent);
+}
+
+/* Screenshot-matched Analytics dashboard */
+.analytics-shot {
+  --analytics-green: #39ff14;
+  --analytics-lime: #9dff00;
+  --analytics-panel: #060806;
+  --analytics-panel-2: #080b08;
+  --analytics-border: rgba(255, 255, 255, 0.105);
+  --analytics-muted: rgba(255, 255, 255, 0.54);
+  background:
+    radial-gradient(circle at 78% 8%, rgba(57, 255, 20, 0.06), transparent 22%),
+    radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.035), transparent 18%),
+    #020302;
+  color-scheme: dark;
+}
+
+.analytics-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.analytics-search {
+  display: flex;
+  height: 42px;
+  width: min(420px, 38vw);
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--analytics-border);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0 0.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.analytics-search input {
+  min-width: 0;
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: white;
+  font-size: 12px;
+}
+
+.analytics-search input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.analytics-search kbd {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.2rem 0.45rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.analytics-icon-button {
+  position: relative;
+  display: grid;
+  height: 42px;
+  width: 42px;
+  place-items: center;
+  border: 1px solid var(--analytics-border);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.analytics-icon-button span {
+  position: absolute;
+  right: -4px;
+  top: -5px;
+  display: grid;
+  height: 16px;
+  min-width: 16px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--analytics-green);
+  color: #031003;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.analytics-new-button,
+.analytics-date-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(57, 255, 20, 0.18);
+  color: white;
+  font-weight: 600;
+}
+
+.analytics-new-button {
+  height: 42px;
+  min-width: 126px;
+  border-radius: 0.78rem;
+  background: linear-gradient(180deg, rgba(57, 255, 20, 0.45), rgba(47, 175, 16, 0.7));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 12px 32px rgba(57, 255, 20, 0.12);
+}
+
+.analytics-date-button {
+  height: 30px;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0 0.8rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 11px;
+}
+
+.analytics-kpi-card,
+.analytics-panel {
+  border: 1px solid var(--analytics-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    var(--analytics-panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 48px rgba(0, 0, 0, 0.28);
+}
+
+.analytics-kpi-card {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-radius: 0.65rem;
+  padding: 1rem 1.1rem;
+}
+
+.analytics-kpi-label {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.analytics-kpi-orb {
+  position: relative;
+  display: grid;
+  height: 52px;
+  width: 52px;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(57, 255, 20, 0.24);
+  background:
+    radial-gradient(circle, rgba(57, 255, 20, 0.24), rgba(57, 255, 20, 0.06) 58%, transparent 70%);
+  color: var(--analytics-green);
+  box-shadow:
+    0 0 0 8px rgba(57, 255, 20, 0.035),
+    0 0 28px rgba(57, 255, 20, 0.18);
+}
+
+.analytics-panel {
+  overflow: hidden;
+  border-radius: 0.7rem;
+  padding: 1rem;
+}
+
+.analytics-panel-header {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.analytics-panel-header h2 {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4rem;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.analytics-panel-aside {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 10px;
+}
+
+.analytics-select-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.35rem 0.6rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+}
+
+.analytics-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--analytics-green);
+  font-size: 11px;
+  font-weight: 600;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.analytics-link:hover {
+  color: #a6ff00;
+  transform: translateX(1px);
+}
+
+.analytics-funnel-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 58px;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 11px;
+}
+
+.analytics-funnel-row:last-child {
+  border-bottom: 0;
+}
+
+.analytics-funnel-track {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.analytics-funnel-bar {
+  display: grid;
+  height: 32px;
+  min-width: 42px;
+  transform-origin: center;
+  place-items: center;
+  clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%);
+  border: 1px solid rgba(57, 255, 20, 0.36);
+  background:
+    linear-gradient(180deg, rgba(57, 255, 20, 0.28), rgba(57, 255, 20, 0.1)),
+    rgba(57, 255, 20, 0.08);
+  box-shadow: inset 0 0 20px rgba(57, 255, 20, 0.08);
+  color: white;
+  font-size: 11px;
+}
+
+.analytics-chart-legend {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: left;
+}
+
+.analytics-table th {
+  padding: 0 0 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.analytics-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.7rem 0;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.analytics-table td:nth-child(2) {
+  color: white;
+}
+
+.analytics-insight-row {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 0.75rem;
+}
+
+.analytics-insight-icon {
+  display: grid;
+  height: 42px;
+  width: 42px;
+  place-items: center;
+  border-radius: 0.55rem;
+}
+
+.analytics-insight-icon--green {
+  background: rgba(57, 255, 20, 0.14);
+  color: var(--analytics-green);
+}
+
+.analytics-insight-icon--purple {
+  background: rgba(160, 78, 255, 0.16);
+  color: #b45cff;
+}
+
+.analytics-insight-row strong,
+.analytics-actions-box p {
+  display: block;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.analytics-insight-row span span {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.analytics-actions-box {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 0.45rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 0.75rem;
+}
+
+.analytics-actions-box button {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 11px;
+}
+
+.analytics-actions-box svg {
+  color: var(--analytics-green);
+}
+
+.analytics-shot .text-brand {
+  color: var(--analytics-green);
+}
+
+@media (max-width: 1279px) {
+  .analytics-topbar {
+    flex-direction: column;
+  }
+
+  .analytics-topbar > div:last-child {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .analytics-search {
+    width: 100%;
+  }
+}
+
+.recruiter-kanban-card {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.recruiter-kanban-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 35%, transparent);
+}
+.recruiter-kanban-card[data-dragging="true"] {
+  border-color: color-mix(in oklab, var(--brand) 55%, transparent);
+  box-shadow: 0 0 28px color-mix(in oklab, var(--brand) 28%, transparent);
+  transform: scale(1.02);
+}
+.recruiter-kanban-col[data-over="true"] {
+  background: color-mix(in oklab, var(--brand) 7%, transparent);
+  border-color: color-mix(in oklab, var(--brand) 35%, transparent);
+}
+
+/* Chat agent work timeline rows (Jobraker-style tool / thinking UI) */
+.chat-conversation-content .not-prose.mb-2 {
+  max-width: 100%;
+}
+
+.jobraker-recruiter-quick-actions button {
+  min-height: 2.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  color: color-mix(in oklab, var(--foreground) 60%, transparent);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.jobraker-recruiter-quick-actions button:hover {
+  border-color: color-mix(in oklab, var(--brand) 30%, transparent);
+  background: color-mix(in oklab, var(--brand) 10%, transparent);
+  color: var(--brand);
+}
+
+.jobraker-recruiter-quick-actions button svg {
+  color: inherit;
+}
+
+.jobraker-sidebar-plan-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--card) 100%, transparent),
+    var(--background)
+  );
+  transition: border-color 0.3s ease;
+}
+
+.jobraker-sidebar-plan-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 30%, transparent);
+}
+
+.jobraker-sidebar-plan-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in oklab, var(--brand) 5%, transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.jobraker-sidebar-plan-card:hover::before {
+  opacity: 1;
+}
+
+.jobraker-recruiter-sidebar .jobraker-sidebar-footer {
+  border-top: 1px solid color-mix(in oklab, var(--border) 40%, transparent);
+  background: color-mix(in oklab, var(--card) 40%, transparent);
+}
+
+.jobraker-recruiter-sidebar .jobraker-sidebar-footer button {
+  border-radius: 0.75rem;
+  color: color-mix(in oklab, var(--foreground) 60%, transparent);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.jobraker-recruiter-sidebar .jobraker-sidebar-footer button:hover {
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  color: var(--foreground);
+}
+
+.jobraker-recruiter-titlebar {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(77, 255, 24, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(5, 7, 9, 0.98), rgba(0, 0, 0, 0.94));
+  border-bottom-color: rgba(255, 255, 255, 0.075);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 14px 40px rgba(0, 0, 0, 0.28);
+}
+
+.jobraker-titlebar-nav {
+  height: 100%;
+}
+
+.jobraker-titlebar-icon {
+  color: rgba(220, 230, 225, 0.46);
+  background: transparent;
+}
+
+.jobraker-titlebar-icon:hover {
+  color: #55ff1f;
+  background: rgba(77, 255, 24, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(77, 255, 24, 0.13);
+}
+
+.jobraker-titlebar-divider {
+  align-self: center;
+  width: 1px;
+  height: 24px;
+  margin-right: 10px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.jobraker-recruiter-tabbar {
+  height: 34px;
+  margin-right: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(8, 10, 13, 0.76);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 12px 34px rgba(0, 0, 0, 0.24);
+}
+
+.jobraker-recruiter-tab-divider {
+  align-self: center;
+  width: 1px;
+  height: 18px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.095), transparent);
+}
+
+.jobraker-recruiter-tab {
+  min-height: 32px;
+  border-radius: 999px;
+  color: rgba(220, 230, 225, 0.58);
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.jobraker-recruiter-tab:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.jobraker-recruiter-tab.is-active {
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 22% 0%, rgba(77, 255, 24, 0.18), transparent 42%),
+    linear-gradient(180deg, rgba(18, 22, 27, 0.98), rgba(8, 10, 13, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(77, 255, 24, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 24px rgba(77, 255, 24, 0.08);
+}
+
+.jobraker-recruiter-tab.is-active::after {
+  position: absolute;
+  right: 14px;
+  bottom: 4px;
+  left: 14px;
+  height: 1px;
+  border-radius: 999px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(77, 255, 24, 0.72), transparent);
+}
+
+/* Jobraker chat page design (scoped to chat surfaces) */
+.chat-glass-panel {
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.chat-suggestion-card {
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.chat-suggestion-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 55%, transparent);
+  background: color-mix(in oklab, var(--brand) 8%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--brand) 12%, transparent);
+}
+
+[data-chat-sidebar-root] [role="log"] > div,
+[data-chat-page-shell] [role="log"] > div {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--border) 85%, transparent) transparent;
+}
+
+[data-chat-sidebar-root] [role="log"] > div::-webkit-scrollbar,
+[data-chat-page-shell] [role="log"] > div::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-chat-sidebar-root] [role="log"] > div::-webkit-scrollbar-track,
+[data-chat-page-shell] [role="log"] > div::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-chat-sidebar-root] [role="log"] > div::-webkit-scrollbar-thumb,
+[data-chat-page-shell] [role="log"] > div::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--border) 85%, transparent);
+  border-radius: 10px;
+}
+
+[data-chat-sidebar-root] [role="log"] > div::-webkit-scrollbar-thumb:hover,
+[data-chat-page-shell] [role="log"] > div::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+
+[data-chat-sidebar-root] .chat-conversation-content,
+[data-chat-page-shell] .chat-conversation-content {
+  gap: 1.5rem;
+}
+
+.jobraker-recruiter-composer-dock {
+  background: linear-gradient(
+    to top,
+    var(--background) 72%,
+    color-mix(in oklab, var(--background) 40%, transparent) 100%
+  );
+  box-shadow: 0 -20px 44px color-mix(in oklab, var(--background) 78%, transparent);
+}
+
+.jobraker-recruiter-chat-input {
+  overflow: visible;
+  border-color: color-mix(in oklab, var(--border) 74%, transparent);
+  background: color-mix(in oklab, var(--card) 85%, transparent);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 8px 32px color-mix(in oklab, var(--background) 55%, transparent);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+
+.jobraker-recruiter-chat-input:focus-within {
+  border-color: color-mix(in oklab, var(--brand) 50%, transparent);
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--brand) 50%, transparent),
+    0 8px 32px color-mix(in oklab, var(--brand) 8%, transparent);
+}
+
+[data-slot="message-content"] {
+  line-height: 1.62;
+}
+
+[data-chat-sidebar-root] .is-user [data-slot="message-content"],
+[data-chat-page-shell] .is-user [data-slot="message-content"] {
+  max-width: 85%;
+  border: none;
+  border-radius: 1rem;
+  border-top-right-radius: 0.125rem;
+  background: var(--brand);
+  color: var(--primary-foreground);
+  font-weight: 500;
+}
+
+[data-chat-sidebar-root] .is-assistant [data-slot="message-content"],
+[data-chat-page-shell] .is-assistant [data-slot="message-content"] {
+  max-width: 100%;
+  border-radius: 1rem;
+  border-top-left-radius: 0.125rem;
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  background: color-mix(in oklab, var(--card) 72%, transparent);
+  backdrop-filter: blur(12px);
+  color: color-mix(in oklab, var(--foreground) 94%, var(--muted-foreground) 6%);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--background) 40%, transparent);
+}
+
+[data-chat-sidebar-root] .is-user,
+[data-chat-page-shell] .is-user {
+  max-width: 100%;
+}
+
+[data-chat-sidebar-root] .is-assistant.group,
+[data-chat-page-shell] .is-assistant.group {
+  max-width: 100%;
+}
+
+/* Markdown content base styles for Streamdown/MessageResponse */
+@layer components {
+  /* Target elements inside MessageResponse wrapper */
+  [data-slot="message-content"] ul,
+  [data-slot="message-content"] ol {
+    @apply my-2 pl-5;
+  }
+  [data-slot="message-content"] ul {
+    @apply list-disc;
+  }
+  [data-slot="message-content"] ol {
+    @apply list-decimal;
+  }
+  [data-slot="message-content"] li {
+    @apply my-1;
+  }
+  [data-slot="message-content"] p {
+    @apply my-2 first:mt-0 last:mb-0;
+  }
+  [data-slot="message-content"] h1 {
+    @apply my-4 text-2xl font-bold first:mt-0;
+  }
+  [data-slot="message-content"] h2 {
+    @apply my-3 text-xl font-semibold first:mt-0;
+  }
+  [data-slot="message-content"] h3 {
+    @apply my-3 text-lg font-semibold first:mt-0;
+  }
+  [data-slot="message-content"] h4,
+  [data-slot="message-content"] h5,
+  [data-slot="message-content"] h6 {
+    @apply my-2 font-semibold first:mt-0;
+  }
+  [data-slot="message-content"] code:not(pre code) {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm;
+  }
+  [data-slot="message-content"] pre {
+    @apply my-3 overflow-x-auto rounded-lg;
+  }
+  [data-slot="message-content"] blockquote {
+    @apply my-3 border-l-4 border-border pl-4 italic text-muted-foreground;
+  }
+  [data-slot="message-content"] hr {
+    @apply my-4 border-border;
+  }
+  [data-slot="message-content"] a {
+    @apply text-primary underline underline-offset-2 hover:text-primary/80;
+  }
+  [data-slot="message-content"] table {
+    @apply my-3 w-full border-collapse;
+  }
+  [data-slot="message-content"] th,
+  [data-slot="message-content"] td {
+    @apply border border-border px-3 py-2 text-left;
+  }
+  [data-slot="message-content"] th {
+    @apply bg-muted font-semibold;
+  }
+}
+
+/* Titlebar drag regions for frameless window */
+.titlebar-drag-region {
+  -webkit-app-region: drag;
+}
+
+.titlebar-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.graph-view {
+  background-color: var(--background);
+  user-select: none;
+}
+
+.graph-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#1f2937 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.graph-view > svg {
+  position: relative;
+  z-index: 1;
+  cursor: grab;
+}
+
+.graph-view:active > svg {
+  cursor: grabbing;
+}
+
+.graph-view text {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Upgrade button: grainy gradient sweep on hover */
+.upgrade-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.upgrade-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.25'/%3E%3C/svg%3E"),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(168, 85, 247, 0.35) 20%,
+      rgba(236, 72, 153, 0.4) 40%,
+      rgba(251, 146, 60, 0.35) 60%,
+      rgba(168, 85, 247, 0.3) 80%,
+      transparent 100%
+    );
+  background-size: 100px 100px, 100% 100%;
+  transform: translateX(-120%);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.upgrade-btn:hover::before {
+  animation: grain-sweep 2.4s ease-in-out infinite;
+}
+
+@keyframes grain-sweep {
+  0% {
+    opacity: 1;
+    transform: translateX(-120%);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(120%);
+  }
+  55% {
+    opacity: 1;
+    transform: translateX(120%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-120%);
+  }
+}
+
+/* ============================================================
+   Jobraker brand theme
+   Signature bright-green accent (#1dff00) + dark canvas, ported
+   from the Jobraker marketing app. Drives primary / ring /
+   sidebar-active states via --main-color and adds brand glow,
+   gradient text and a green-tinted scrollbar.
+   ============================================================ */
+:root {
+  /* #1dff00 expressed in oklch */
+  --brand: oklch(0.87 0.28 142);
+  --brand-strong: oklch(0.78 0.27 143);
+  --brand-soft: oklch(0.87 0.28 142 / 0.12);
+  --main-color: var(--brand);
+  /* Green surfaces always pair with dark text (matches Jobraker) */
+  --primary-foreground: oklch(0.16 0 0);
+  --ring: var(--brand);
+  --scrollbar-thumb: oklch(0.87 0.28 142 / 0.42);
+  --scrollbar-thumb-hover: oklch(0.87 0.28 142 / 0.68);
+}
+
+.dark {
+  --brand: oklch(0.87 0.28 142);
+  --brand-strong: oklch(0.78 0.27 143);
+  --brand-soft: oklch(0.87 0.28 142 / 0.16);
+  --main-color: var(--brand);
+  --primary-foreground: oklch(0.16 0 0);
+  --ring: var(--brand);
+}
+
+/* Brand gradient fill (logo-adjacent surfaces, CTAs) */
+.bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--brand-strong), var(--brand));
+}
+
+/* Brand gradient text (wordmark-style headings) */
+.text-brand-gradient {
+  background-image: linear-gradient(90deg, var(--brand-strong), var(--brand));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Ambient green glow used around brand marks / focal cards */
+.brand-glow {
+  box-shadow:
+    0 0 14px color-mix(in oklab, var(--brand) 22%, transparent),
+    0 0 32px color-mix(in oklab, var(--brand) 10%, transparent);
+}
+
+.card-hover {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--brand) 40%, transparent);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--brand) 18%, transparent);
+}
