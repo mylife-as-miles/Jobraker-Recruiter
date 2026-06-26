@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Product gold gradient (shell / brand accents). */
+    --brand-from: #1dff00;
+    --brand-to: #1dff00;
+    --brand-mid: #1dff00;
+    --brand: 113 100% 50%;
+    --chart-1: hsl(var(--brand));
+    --chart-2: hsl(var(--brand) / 0.9);
+    --chart-3: hsl(var(--brand) / 0.8);
+    --chart-4: hsl(var(--brand) / 0.7);
+    --chart-5: hsl(var(--brand) / 0.6);
+  }
+
+  .dark {
+    --brand-from: #1dff00;
+    --brand-to: #1dff00;
+    --brand-mid: #1dff00;
+    --brand: 113 100% 50%;
+    --chart-1: hsl(var(--brand));
+    --chart-2: hsl(var(--brand) / 0.9);
+    --chart-3: hsl(var(--brand) / 0.8);
+    --chart-4: hsl(var(--brand) / 0.7);
+    --chart-5: hsl(var(--brand) / 0.6);
+  }
+}
+
+@layer utilities {
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+  }
+  .text-brand-gradient {
+    background-image: linear-gradient(90deg, var(--brand-from), var(--brand-mid));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+* {
+  font-variant-ligatures: none;
+}
+
+/* Avoid globally disabling scroll; scope overflow rules to specific layouts instead */
+body {
+  overflow-x: hidden;
+}
+
+#root {
+  @apply antialiased;
+}
+
+[data-page].hide-icons .ph {
+  @apply hidden;
+}
+
+[data-page].underline-links a {
+  @apply underline underline-offset-2;
+}
+
+.wysiwyg {
+  @apply prose-foreground prose max-w-none prose-headings:mb-2 prose-headings:mt-0 prose-p:mb-2 prose-p:mt-0 prose-p:leading-normal prose-a:break-all prose-ol:mb-2 prose-ol:mt-0 prose-ul:mb-2 prose-ul:mt-0 prose-li:mb-2 prose-li:mt-0 prose-li:leading-normal prose-img:mb-2 prose-img:mt-0 prose-hr:mb-2 prose-hr:mt-0;
+}
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Global Reduced Motion Overrides */
+.rm,
+.rm * {
+  transition-duration: 0.1ms !important;
+  animation-duration: 0.1ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* Framer Motion / CSS Variable for specific components */
+:root {
+  --reduce-motion: 0;
+}
+
+.rm {
+  --reduce-motion: 1;
+}
