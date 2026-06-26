@@ -1,0 +1,14 @@
+{
+    "name": "@x/shared",
+    "private": true,
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+      "build": "node -e \"try{require('fs').rmSync('dist',{recursive:true,force:true})}catch(e){}\" && tsc",
+      "dev": "tsc -w"
+    },
+    "dependencies": {
+      "zod": "^4.2.1"
+    }
+}
