@@ -1,0 +1,47 @@
+name: Jobraker Recruiter Build
+
+on:
+  pull_request:
+
+jobs:
+  build-jobraker-recruiter-nextjs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: 'apps/jobraker-recruiter/package-lock.json'
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/jobraker-recruiter
+        
+      - name: Build Jobraker Recruiter
+        run: npm run build
+        working-directory: apps/jobraker-recruiter
+
+  build-jobraker-recruiter-x:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache-dependency-path: 'apps/jobraker-recruiter/package-lock.json'
+          node-version: '24'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/cli
+        
+      - name: Build Jobraker Recruiter
+        run: npm run build
+        working-directory: apps/cli 
