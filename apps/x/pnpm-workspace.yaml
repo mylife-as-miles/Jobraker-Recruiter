@@ -1,0 +1,24 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  '@google/genai': set this to true or false
+  core-js: set this to true or false
+  electron: set this to true or false
+  electron-winstaller: set this to true or false
+  esbuild: set this to true or false
+  protobufjs: set this to true or false
+  sqlite3: set this to true or false
+
+catalog:
+  vitest: 4.1.7
+
+onlyBuiltDependencies:
+  - core-js
+  - electron
+  - electron-winstaller
+  - esbuild
+  - fs-xattr
+  - macos-alias
+  - protobufjs
