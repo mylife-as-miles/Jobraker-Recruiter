@@ -30,7 +30,6 @@ cd apps/x/apps/renderer && npx tsc --noEmit
 jobraker-recruiter/
 ├── apps/
 │   ├── x/                    # Electron desktop app (primary focus of this doc)
-│   ├── jobraker-recruiter/   # Next.js web dashboard
 │   ├── jobraker-recruiter-x/ # Next.js frontend
 │   ├── cli/                  # CLI tool
 │   ├── python-sdk/           # Python SDK

@@ -118,7 +118,7 @@ The project is structured as a monorepo containing multiple packages and applica
   * **`apps/renderer/`**: The React front-end, styled with TailwindCSS and custom CSS rules.
   * **`packages/shared/`**: Contains shared runtime schemas (Zod), IPC validator objects, and common types.
   * **`packages/core/`**: Houses key back-end operations (AI tools, scheduler ticks, local sync managers).
-* **`apps/jobraker-recruiter/`** and **`apps/jobraker-recruiter-x/`**: Web dashboards.
+* **`apps/jobraker-recruiter-x/`**: Next.js frontend.
 * **`Jobraker/`**: Job-seeker facing interface.
 
 ### Build Dependencies & Compilation Order
