@@ -1,0 +1,14 @@
+{
+  "name": "jobraker-recruiter-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:web": "npm run dev --prefix web",
+    "build:web": "npm run build --prefix web",
+    "dev:desktop": "npm run dev --prefix desktop/apps/x",
+    "build:desktop": "npm run deps --prefix desktop/apps/x && npm run build:renderer --prefix desktop/apps/x"
+  },
+  "workspaces": [
+    "web"
+  ]
+}
