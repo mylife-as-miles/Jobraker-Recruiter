@@ -8,6 +8,7 @@ import {
   RecruiterResetPasswordView,
 } from '@/components/recruiter-auth-view'
 import { RecruiterDownloadLanding } from '@/components/recruiter-download-landing'
+import { RecruiterDashboardView, RecruiterOnboardingView } from '@/components/recruiter-onboarding-view'
 import { PostHogProvider } from 'posthog-js/react'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { configureAnalyticsContext } from './lib/analytics'
@@ -39,6 +40,14 @@ export function Root() {
 
   if (pathname.startsWith('/reset-password')) {
     return <RecruiterResetPasswordView />
+  }
+
+  if (pathname.startsWith('/onboarding')) {
+    return <RecruiterOnboardingView />
+  }
+
+  if (pathname.startsWith('/dashboard')) {
+    return <RecruiterDashboardView />
   }
 
   if (pathname.startsWith('/login') || pathname.startsWith('/auth')) {

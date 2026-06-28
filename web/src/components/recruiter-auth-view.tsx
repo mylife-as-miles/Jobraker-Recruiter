@@ -122,7 +122,7 @@ export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewPr
       if (error) throw error
 
       toast.success('Welcome back to Jobraker Recruiter.')
-      navigateTo('/')
+      navigateTo('/onboarding')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
       toast.error(message)
