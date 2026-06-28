@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsc -p node_modules/@x/shared/tsconfig.json && vite --host 0.0.0.0",
-    "build": "tsc -p node_modules/@x/shared/tsconfig.json && tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "node node_modules/typescript/bin/tsc -p ../desktop/apps/x/packages/shared/tsconfig.json && node node_modules/vite/bin/vite.js --host 0.0.0.0",
+    "build": "node node_modules/typescript/bin/tsc -p ../desktop/apps/x/packages/shared/tsconfig.json && node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
+    "preview": "node node_modules/vite/bin/vite.js preview"
   },
   "dependencies": {
     "@eigenpal/docx-editor-react": "^1.0.3",
@@ -25,6 +25,8 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@supabase/ssr": "0.12.0",
+    "@supabase/supabase-js": "2.108.2",
     "@tailwindcss/vite": "^4.1.18",
     "@tiptap/core": "3.22.4",
     "@tiptap/extension-image": "3.22.4",

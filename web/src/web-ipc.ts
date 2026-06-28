@@ -165,7 +165,17 @@ async function invoke(channel: string, args: unknown): Promise<unknown> {
     case 'models:list':
       return { providers: [], defaults: {} }
     case 'bg-task:list':
-      return { tasks: [], nextCursor: null }
+      return { items: [], tasks: [], nextCursor: null }
+    case 'bg-task:listRunIds':
+      return { runIds: [] }
+    case 'bg-task:get':
+      return { task: null }
+    case 'bg-task:create':
+    case 'bg-task:patch':
+    case 'bg-task:run':
+    case 'bg-task:stop':
+    case 'bg-task:delete':
+      return { ok: true }
     case 'agent-schedule:getConfig':
       return { agents: [] }
     case 'agent-schedule:getState':

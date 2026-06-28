@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.vite/
+.playwright-mcp/
+
+*.log
+*.tsbuildinfo
+
+web/node_modules/
+web/dist/
+web/.web-dev.*.log
+web/web-build.log
+
+desktop/**/node_modules/
+desktop/**/dist/

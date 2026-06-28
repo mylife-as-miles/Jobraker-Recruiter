@@ -12,10 +12,10 @@ import {
   ChevronDown,
   Code,
   Database,
-  Download,
   FileText,
   Github,
   Linkedin,
+  LogIn,
   Mail,
   MessageSquare,
   Mic,
@@ -26,8 +26,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-const WINDOWS_INSTALLER_PATH =
-  'https://github.com/mylife-as-miles/Jobraker-Recruiters/releases/download/v0.1.0/Jobraker.Recruiter-win32-x64-0.1.0.zip'
+const AUTH_CTA_PATH = '/login'
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -46,9 +45,9 @@ const stagger: Variants = {
   },
 }
 
-function DownloadButton({
+function AuthButton({
   location,
-  children = 'DOWNLOAD WINDOWS APP',
+  children = 'LOGIN OR SIGN UP',
   variant = 'solid',
 }: {
   location: string
@@ -59,16 +58,16 @@ function DownloadButton({
     variant === 'solid'
       ? 'bg-[#1dff00] text-black hover:bg-[#80ff72] border-[#1dff00] hover:shadow-[0_0_20px_rgba(29,255,0,0.4)]'
       : 'bg-transparent text-[#1dff00] border-[#1dff00] hover:bg-[#1dff00]/10'
+  const sizing = location === 'nav' ? 'h-10 w-auto px-4 text-sm sm:h-12 sm:px-6 sm:text-base' : 'h-12 w-full px-6 text-base sm:w-auto'
 
   return (
     <a
-      href={WINDOWS_INSTALLER_PATH}
-      download
+      href={AUTH_CTA_PATH}
       data-cta-location={location}
-      className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-none border px-6 text-base font-bold transition-all sm:w-auto ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-none border font-bold transition-all ${sizing} ${className}`}
     >
       {children}
-      {variant === 'solid' ? <Download className="h-5 w-5" /> : <ArrowRight className="h-5 w-5" />}
+      {variant === 'solid' ? <LogIn className="h-5 w-5" /> : <ArrowRight className="h-5 w-5" />}
     </a>
   )
 }
@@ -100,9 +99,9 @@ function AnimatedSection({
 
 function EarthOrb() {
   const rings = [
-    'h-[320px] w-[320px] border-[#1dff00]/15',
-    'h-[250px] w-[250px] border-[#1dff00]/25',
-    'h-[180px] w-[180px] border-white/10',
+    'h-[245px] w-[245px] sm:h-[320px] sm:w-[320px] border-[#1dff00]/15',
+    'h-[198px] w-[198px] sm:h-[250px] sm:w-[250px] border-[#1dff00]/25',
+    'h-[142px] w-[142px] sm:h-[180px] sm:w-[180px] border-white/10',
   ]
 
   return (
@@ -110,15 +109,15 @@ function EarthOrb() {
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}
-        className="absolute h-[420px] w-[420px] rounded-full border border-dashed border-[#1dff00]/20"
+        className="absolute h-[300px] w-[300px] rounded-full border border-dashed border-[#1dff00]/20 sm:h-[420px] sm:w-[420px]"
       />
       <motion.div
         animate={{ rotate: -360 }}
         transition={{ duration: 100, repeat: Infinity, ease: 'linear' }}
-        className="absolute h-[520px] w-[520px] rounded-full border border-[#1dff00]/10"
+        className="absolute h-[360px] w-[360px] rounded-full border border-[#1dff00]/10 sm:h-[520px] sm:w-[520px]"
       />
-      <div className="absolute h-[360px] w-[360px] rounded-full bg-[#1dff00]/10 blur-[90px]" />
-      <div className="relative h-[300px] w-[300px] rounded-full border border-[#1dff00]/25 bg-black shadow-[inset_0_0_70px_rgba(29,255,0,0.08),0_0_80px_rgba(29,255,0,0.18)] md:h-[360px] md:w-[360px]">
+      <div className="absolute h-[250px] w-[250px] rounded-full bg-[#1dff00]/10 blur-[70px] sm:h-[360px] sm:w-[360px] sm:blur-[90px]" />
+      <div className="relative h-[230px] w-[230px] rounded-full border border-[#1dff00]/25 bg-black shadow-[inset_0_0_70px_rgba(29,255,0,0.08),0_0_80px_rgba(29,255,0,0.18)] sm:h-[300px] sm:w-[300px] md:h-[360px] md:w-[360px]">
         <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(29,255,0,0.32),transparent_18%),radial-gradient(circle_at_65%_70%,rgba(29,255,0,0.18),transparent_24%),radial-gradient(circle_at_center,transparent_45%,rgba(29,255,0,0.08)_70%,transparent_72%)]" />
         <div className="absolute inset-0 rounded-full bg-[linear-gradient(to_right,rgba(29,255,0,0.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(29,255,0,0.10)_1px,transparent_1px)] bg-[size:34px_34px] opacity-35 [mask-image:radial-gradient(circle,#000_55%,transparent_72%)]" />
         {rings.map((ring) => (
@@ -140,7 +139,7 @@ function EarthOrb() {
           return (
             <div
               key={label}
-              className={`absolute ${positions[index]} rounded-xl border border-[#1dff00]/25 bg-black/80 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#1dff00] backdrop-blur`}
+              className={`absolute ${positions[index]} rounded-xl border border-[#1dff00]/25 bg-black/80 px-2 py-1.5 text-[8px] font-bold uppercase tracking-[0.12em] text-[#1dff00] backdrop-blur sm:px-3 sm:py-2 sm:text-[10px] sm:tracking-[0.16em]`}
             >
               {label}
             </div>
@@ -153,7 +152,7 @@ function EarthOrb() {
 
 function HeroSection() {
   return (
-    <div className="relative flex min-h-screen w-full flex-col justify-center overflow-hidden bg-black px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+    <div className="relative flex min-h-[100svh] w-full flex-col justify-center overflow-hidden bg-black px-4 pb-14 pt-24 sm:px-6 sm:pb-20 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#1dff000a_1px,transparent_1px),linear-gradient(to_bottom,#1dff000a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-12 lg:flex-row lg:gap-20">
@@ -161,7 +160,7 @@ function HeroSection() {
           initial="hidden"
           animate="visible"
           variants={stagger}
-          className="z-20 flex-1 space-y-8 pt-10 text-center lg:pt-0 lg:text-left"
+          className="z-20 flex-1 space-y-6 pt-6 text-center sm:space-y-8 sm:pt-10 lg:pt-0 lg:text-left"
         >
           <motion.div variants={fadeUp} className="inline-flex items-center space-x-2 rounded-full border border-[#1dff00]/30 bg-[#1dff00]/5 px-3 py-1 font-mono text-xs uppercase tracking-widest text-[#1dff00]">
             <span className="relative flex h-2 w-2">
@@ -171,7 +170,7 @@ function HeroSection() {
             <span>AI recruiter agent ready</span>
           </motion.div>
 
-          <motion.h1 variants={fadeUp} className="font-mono text-4xl font-bold leading-[0.9] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+          <motion.h1 variants={fadeUp} className="font-mono text-[2.55rem] font-bold leading-[0.92] tracking-tight text-white min-[420px]:text-5xl md:text-6xl lg:text-7xl">
             Stop recruiting <br />
             <span className="bg-gradient-to-r from-[#1dff00] via-[#80ff72] to-white bg-clip-text text-transparent">
               one profile at a time
@@ -180,13 +179,13 @@ function HeroSection() {
 
           <motion.p variants={fadeUp} className="mx-auto max-w-xl font-mono text-sm leading-relaxed text-neutral-400 sm:text-base md:text-lg lg:mx-0">
             Jobraker Recruiter turns your roles, candidates, notes, inbox, and
-            calendar into a desktop AI command center. Source stronger-fit
-            talent, rank matches with evidence, draft outreach, and move the
-            pipeline while you stay in control.
+            calendar into a web AI command center. Source stronger-fit talent,
+            rank matches with evidence, draft outreach, and move the pipeline
+            from any browser while you stay in control.
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row lg:justify-start">
-            <DownloadButton location="hero" />
+            <AuthButton location="hero" />
             <a
               href="#workflow-section"
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-none border border-[#1dff00] bg-transparent px-6 font-mono text-base text-[#1dff00] transition-all hover:bg-[#1dff00]/10 sm:w-auto"
@@ -196,15 +195,15 @@ function HeroSection() {
             </a>
           </motion.div>
 
-          <motion.div variants={fadeUp} className="flex items-center justify-center space-x-8 pt-8 font-mono text-sm text-neutral-500 lg:justify-start">
-            <div className="flex items-center space-x-2">
+          <motion.div variants={fadeUp} className="flex flex-col items-center justify-center gap-3 pt-6 font-mono text-sm text-neutral-500 sm:flex-row sm:gap-8 sm:pt-8 lg:justify-start">
+            <div className="flex items-center space-x-2 text-center sm:text-left">
               <span className="font-bold text-[#1dff00]">Review-first</span>
               <span>human approvals stay visible</span>
             </div>
-            <div className="h-4 w-px bg-neutral-800" />
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-[#1dff00]">Local-first</span>
-              <span>workspace data stays close</span>
+            <div className="hidden h-4 w-px bg-neutral-800 sm:block" />
+            <div className="flex items-center space-x-2 text-center sm:text-left">
+              <span className="font-bold text-[#1dff00]">Web-ready</span>
+              <span>your hiring workspace follows you</span>
             </div>
           </motion.div>
         </motion.div>
@@ -213,9 +212,9 @@ function HeroSection() {
           initial={{ opacity: 0, y: 40, rotateX: 18 }}
           animate={{ opacity: 1, y: 0, rotateX: 0 }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="relative -mt-10 flex h-[420px] w-full flex-1 items-center justify-center perspective-1000 sm:h-[520px] lg:mt-0 lg:h-[620px]"
+          className="relative -mt-6 flex h-[300px] w-full max-w-full flex-1 items-center justify-center perspective-1000 sm:-mt-10 sm:h-[420px] md:h-[520px] lg:mt-0 lg:h-[620px]"
         >
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1dff00] opacity-15 blur-[150px]" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[240px] w-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1dff00] opacity-15 blur-[100px] sm:h-[350px] sm:w-[350px] sm:blur-[150px]" />
           <EarthOrb />
         </motion.div>
       </div>
@@ -236,10 +235,10 @@ function SocialProof() {
   ]
 
   return (
-    <div className="relative w-full overflow-hidden border-y border-[#1dff00]/10 bg-black py-12">
+    <div className="relative w-full overflow-hidden border-y border-[#1dff00]/10 bg-black py-8 sm:py-12">
       <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black via-transparent to-black" />
       <div className="mb-8 text-center">
-        <p className="font-mono text-sm uppercase tracking-widest text-gray-500">
+        <p className="px-4 font-mono text-xs uppercase tracking-widest text-gray-500 sm:text-sm">
           Built for teams hiring across high-intent knowledge roles
         </p>
       </div>
@@ -248,11 +247,11 @@ function SocialProof() {
         <motion.div
           animate={{ x: ['0%', '-50%'] }}
           transition={{ duration: 20, ease: 'linear', repeat: Infinity }}
-          className="flex whitespace-nowrap space-x-12 sm:space-x-24"
+          className="flex whitespace-nowrap space-x-8 sm:space-x-24"
         >
           {[...companies, ...companies].map((company, index) => (
             <div key={`${company}-${index}`} className="flex items-center space-x-2 opacity-50 transition-opacity hover:opacity-100">
-              <span className="font-mono text-xl font-bold text-white/80 md:text-2xl">
+              <span className="font-mono text-base font-bold text-white/80 sm:text-xl md:text-2xl">
                 {company}
               </span>
             </div>
@@ -280,7 +279,7 @@ function KanbanCard() {
   ]
 
   return (
-    <div className="grid h-full grid-cols-3 gap-3 p-4">
+    <div className="grid h-full grid-cols-1 gap-3 p-3 sm:grid-cols-3 sm:p-4">
       {columns.map((column) => (
         <div key={column.title} className="rounded-xl border border-white/5 bg-black/30 p-3">
           <div className="mb-3 flex items-center justify-between">
@@ -399,14 +398,14 @@ function BentoGrid() {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-black py-24">
+    <section className="relative overflow-hidden bg-black py-16 sm:py-24">
       <div className="pointer-events-none absolute left-1/2 top-0 h-full w-full max-w-7xl -translate-x-1/2">
         <div className="absolute left-[10%] top-[20%] h-[400px] w-[400px] rounded-full bg-[#1dff00]/5 blur-[100px]" />
         <div className="absolute bottom-[20%] right-[10%] h-[300px] w-[300px] rounded-full bg-cyan-500/5 blur-[100px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-20 max-w-3xl text-center">
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-20">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -422,7 +421,7 @@ function BentoGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="mb-6 font-sans text-4xl font-bold tracking-tight text-white md:text-6xl"
+            className="mb-6 font-sans text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-6xl"
           >
             Turn scattered hiring work into <br />
             <span className="bg-gradient-to-r from-[#1dff00] to-[#1dff00] bg-clip-text text-transparent">
@@ -448,11 +447,11 @@ function BentoGrid() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
-          className="grid grid-cols-1 gap-6 md:grid-cols-3"
+          className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6"
         >
           <motion.div variants={fadeUp} className="group relative col-span-1 row-span-2 overflow-hidden rounded-3xl border border-white/10 bg-black md:col-span-2">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            <div className="relative z-10 flex h-full flex-col p-8">
+            <div className="relative z-10 flex h-full flex-col p-5 sm:p-8">
               <div className="mb-8">
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-[#1dff00]/20 bg-[#1dff00]/10">
                   <Activity className="h-5 w-5 text-[#1dff00]" />
@@ -466,7 +465,7 @@ function BentoGrid() {
                 </p>
               </div>
 
-              <div className="relative min-h-[250px] w-full flex-1 overflow-hidden rounded-xl border border-white/5 bg-[#15171A]">
+              <div className="relative min-h-[360px] w-full flex-1 overflow-hidden rounded-xl border border-white/5 bg-[#15171A] sm:min-h-[250px]">
                 <KanbanCard />
               </div>
             </div>
@@ -475,7 +474,7 @@ function BentoGrid() {
           {smallCards.map((card) => (
             <motion.div key={card.title} variants={fadeUp} className="group relative col-span-1 row-span-1 overflow-hidden rounded-3xl border border-white/10 bg-black">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="flex h-full flex-col p-6">
+              <div className="flex h-full flex-col p-5 sm:p-6">
                 <div className="mb-4 flex items-start justify-between">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-full border ${card.tone}`}>
                     <card.icon className="h-4 w-4" />
@@ -490,7 +489,7 @@ function BentoGrid() {
             </motion.div>
           ))}
 
-          <motion.div variants={fadeUp} className="group relative col-span-1 flex flex-col items-center gap-8 overflow-hidden rounded-3xl border border-white/10 bg-black p-8 md:col-span-3 md:flex-row">
+          <motion.div variants={fadeUp} className="group relative col-span-1 flex flex-col items-center gap-6 overflow-hidden rounded-3xl border border-white/10 bg-black p-5 sm:gap-8 sm:p-8 md:col-span-3 md:flex-row">
             <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             <div className="relative z-10 flex-1">
               <div className="mb-4 inline-flex items-center rounded-full bg-[#1dff00]/10 px-3 py-1 text-xs font-bold text-[#1dff00]">
@@ -604,7 +603,7 @@ function LiveDemo() {
 
 function DashboardPreview() {
   return (
-    <div className="relative z-20 mx-auto w-full max-w-[1400px] px-4 py-12 sm:px-6 md:py-24 lg:px-8">
+    <div className="relative z-20 mx-auto w-full max-w-[1400px] px-4 py-10 sm:px-6 md:py-24 lg:px-8">
       <div className="mx-auto mb-16 max-w-3xl text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -636,11 +635,11 @@ function DashboardPreview() {
       >
         <div className="absolute inset-0 z-0 scale-75 rounded-full bg-[#1dff00] opacity-10 blur-[100px]" />
         <div className="relative z-10 overflow-hidden rounded-xl border border-[#1dff00]/20 bg-black shadow-[0_0_50px_rgba(29,255,0,0.15)] backdrop-blur-sm">
-          <div className="flex h-10 items-center space-x-2 border-b border-[#1dff00]/10 bg-black/50 px-4">
+          <div className="flex h-10 items-center space-x-2 border-b border-[#1dff00]/10 bg-black/50 px-3 sm:px-4">
             <div className="h-3 w-3 rounded-full border border-[#1dff00]/50 bg-[#1dff00]/20" />
             <div className="h-3 w-3 rounded-full border border-[#1dff00]/50 bg-[#1dff00]/20" />
             <div className="h-3 w-3 rounded-full border border-[#1dff00]/50 bg-[#1dff00]/20" />
-            <div className="ml-4 flex h-6 flex-1 items-center rounded border border-[#1dff00]/10 bg-black/30 px-3 font-mono text-[10px] text-gray-600">
+            <div className="ml-2 hidden h-6 flex-1 items-center rounded border border-[#1dff00]/10 bg-black/30 px-3 font-mono text-[10px] text-gray-600 sm:flex">
               app.jobraker.local/recruiter
             </div>
           </div>
@@ -657,7 +656,7 @@ function DashboardPreview() {
                 </div>
               </div>
 
-              <div className="col-span-2 flex min-h-[400px] flex-col items-center justify-center bg-black/40 p-4 md:p-8">
+              <div className="col-span-1 flex min-h-[340px] flex-col items-center justify-center bg-black/40 p-4 md:col-span-2 md:min-h-[400px] md:p-8">
                 <div className="mb-6 text-center">
                   <h3 className="mb-2 font-mono text-xl text-[#1dff00]">
                     AGENT WORKFLOW LIVE
@@ -693,24 +692,24 @@ function IntegrationsSection() {
   ]
 
   return (
-    <section className="relative flex min-h-[800px] flex-col justify-center overflow-hidden bg-black py-24">
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1dff00]/5 blur-3xl" />
+    <section className="relative flex min-h-[620px] flex-col justify-center overflow-hidden bg-black py-16 sm:min-h-[800px] sm:py-24">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1dff00]/5 blur-3xl sm:h-[800px] sm:w-[800px]" />
 
       <div className="relative z-10 mx-auto mb-12 px-4 text-center">
-        <h2 className="mb-6 font-mono text-4xl font-bold tracking-tight text-white md:text-6xl">
+        <h2 className="mb-6 font-mono text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-6xl">
           YOUR HIRING,{' '}
           <span className="bg-gradient-to-r from-[#1dff00] to-[#1dff00] bg-clip-text text-transparent">
             ONE COMMAND CENTER
           </span>
         </h2>
-        <p className="mx-auto max-w-2xl font-mono text-lg text-gray-400">
+        <p className="mx-auto max-w-2xl font-mono text-sm leading-relaxed text-gray-400 sm:text-lg">
           Connect workspace data, email, notes, Elastic retrieval, candidate
           records, and calendar context so great candidates do not get lost
           across tabs.
         </p>
       </div>
 
-      <div className="relative flex h-[600px] w-full items-center justify-center overflow-visible">
+      <div className="relative flex h-[400px] w-full items-center justify-center overflow-hidden sm:h-[600px] sm:overflow-visible">
         <div className="absolute z-20">
           <div className="relative flex items-center justify-center">
             <motion.div
@@ -718,19 +717,19 @@ function IntegrationsSection() {
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               className="absolute h-32 w-32 rounded-full bg-[#1dff00]/20 blur-xl"
             />
-            <div className="relative z-20 flex h-20 w-20 items-center justify-center rounded-full border border-[#1dff00]/50 bg-black shadow-[0_0_30px_rgba(29,255,0,0.3)] backdrop-blur-sm">
-              <Bot className="h-10 w-10 text-[#1dff00]" />
+            <div className="relative z-20 flex h-16 w-16 items-center justify-center rounded-full border border-[#1dff00]/50 bg-black shadow-[0_0_30px_rgba(29,255,0,0.3)] backdrop-blur-sm sm:h-20 sm:w-20">
+              <Bot className="h-8 w-8 text-[#1dff00] sm:h-10 sm:w-10" />
             </div>
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-              className="absolute h-24 w-24 rounded-full border-t-2 border-[#1dff00] opacity-50"
+              className="absolute h-20 w-20 rounded-full border-t-2 border-[#1dff00] opacity-50 sm:h-24 sm:w-24"
             />
           </div>
         </div>
 
         <div className="absolute z-10">
-          <div className="relative flex h-[300px] w-[300px] items-center justify-center rounded-full border border-white/5">
+          <div className="relative flex h-[210px] w-[210px] items-center justify-center rounded-full border border-white/5 sm:h-[300px] sm:w-[300px]">
             <div className="absolute inset-0 animate-[spin_60s_linear_infinite] rounded-full border border-dashed border-white/10" />
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }} className="absolute inset-0">
               {innerOrbitIcons.map((item, index) => {
@@ -738,7 +737,7 @@ function IntegrationsSection() {
                 return (
                   <div key={item.name} className="absolute left-1/2 top-0 h-full w-full -translate-x-1/2 -translate-y-1/2" style={{ transform: `rotate(${angle}deg)` }}>
                     <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }} className="group flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-black text-gray-300 shadow-lg transition-all duration-300 hover:scale-110 hover:border-[#1dff00] hover:text-white">
+                      <motion.div animate={{ rotate: -360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }} className="group flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black text-gray-300 shadow-lg transition-all duration-300 hover:scale-110 hover:border-[#1dff00] hover:text-white sm:h-12 sm:w-12">
                         {item.icon}
                         <div className="absolute top-full mt-2 whitespace-nowrap rounded border border-white/10 bg-black px-2 py-1 text-xs text-[#1dff00] opacity-0 transition-opacity group-hover:opacity-100">
                           {item.name}
@@ -753,7 +752,7 @@ function IntegrationsSection() {
         </div>
 
         <div className="absolute z-10">
-          <div className="relative flex h-[500px] w-[500px] items-center justify-center rounded-full border border-white/5">
+          <div className="relative flex h-[320px] w-[320px] items-center justify-center rounded-full border border-white/5 sm:h-[500px] sm:w-[500px]">
             <div className="absolute inset-0 rounded-full border border-white/5 opacity-50" />
             <motion.div animate={{ rotate: -360 }} transition={{ duration: 100, repeat: Infinity, ease: 'linear' }} className="absolute inset-0 rounded-full border-t border-white/20" />
             <motion.div animate={{ rotate: -360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} className="absolute inset-0">
@@ -762,7 +761,7 @@ function IntegrationsSection() {
                 return (
                   <div key={item.name} className="absolute left-1/2 top-0 h-full w-full -translate-x-1/2 -translate-y-1/2" style={{ transform: `rotate(${angle}deg)` }}>
                     <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} className="group flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-black text-gray-300 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-[#1dff00] hover:text-white">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-black text-gray-300 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-[#1dff00] hover:text-white sm:h-14 sm:w-14">
                         {item.icon}
                         <div className="absolute top-full mt-2 whitespace-nowrap rounded border border-white/10 bg-black px-2 py-1 text-xs text-[#1dff00] opacity-0 transition-opacity group-hover:opacity-100">
                           {item.name}
@@ -776,7 +775,7 @@ function IntegrationsSection() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute z-0 h-[700px] w-[700px] opacity-30">
+        <div className="pointer-events-none absolute z-0 h-[380px] w-[380px] opacity-30 sm:h-[700px] sm:w-[700px]">
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 120, repeat: Infinity, ease: 'linear' }} className="relative h-full w-full">
             <div className="absolute left-1/2 top-0 h-2 w-2 rounded-full bg-[#1dff00] blur-[2px]" />
             <div className="absolute bottom-1/4 right-0 h-1 w-1 rounded-full bg-white blur-[1px]" />
@@ -790,10 +789,10 @@ function IntegrationsSection() {
 
 function LargeTestimonial() {
   return (
-    <section className="border-y border-[#1dff00]/10 bg-black py-24">
+    <section className="border-y border-[#1dff00]/10 bg-black py-16 sm:py-24">
       <div className="mx-auto max-w-5xl px-4 text-center">
         <Quote className="mx-auto mb-8 h-12 w-12 text-[#1dff00] opacity-50" />
-        <h3 className="mb-8 font-mono text-3xl font-bold leading-tight text-white md:text-5xl">
+        <h3 className="mb-8 font-mono text-2xl font-bold leading-tight text-white sm:text-3xl md:text-5xl">
           "Hiring should not depend on how many tabs your team can keep open.
           Let the agent handle the repetitive search work so your energy goes
           into better conversations, sharper evaluation, and faster decisions."
@@ -815,9 +814,9 @@ function LargeTestimonial() {
 function PricingSection() {
   const cards = [
     {
-      title: 'Windows desktop app',
-      body: 'Download the packaged recruiter command center and run it locally on Windows.',
-      icon: Download,
+      title: 'Browser-based command center',
+      body: 'Log in from the web and keep roles, candidates, outreach, and pipeline work in one focused workspace.',
+      icon: LogIn,
     },
     {
       title: 'Agent-ready workspace',
@@ -832,18 +831,18 @@ function PricingSection() {
   ]
 
   return (
-    <section className="bg-black py-24 text-white">
+    <section className="bg-black py-16 text-white sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-[#1dff00]/70">
-            Download
+            Start online
           </p>
           <h2 className="font-mono text-3xl font-bold md:text-5xl">
-            Install the recruiter agent and start from your own data
+            Open the recruiter agent and start from your own data
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-neutral-400 md:text-lg">
-            The landing page has one job: get the Windows app onto the machine
-            where the real recruiting work happens.
+            The landing page has one job: get you into the web app where the
+            real recruiting work happens.
           </p>
         </div>
 
@@ -858,7 +857,7 @@ function PricingSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <DownloadButton location="download_section">DOWNLOAD WINDOWS APP</DownloadButton>
+          <AuthButton location="download_section">LOGIN OR SIGN UP</AuthButton>
         </div>
       </div>
     </section>
@@ -900,7 +899,7 @@ function TestimonialGridSection() {
   ]
 
   return (
-    <section className="bg-black py-24">
+    <section className="bg-black py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-16 max-w-3xl text-center">
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-[#1dff00]/70">
@@ -954,12 +953,12 @@ function TestimonialGridSection() {
 function FAQSection() {
   const faqs = [
     {
-      question: 'What exactly gets downloaded?',
-      answer: 'The CTA downloads the packaged Windows build of Jobraker Recruiter as a zip. Extract it and run the desktop app from the packaged folder.',
+      question: 'What happens after I log in?',
+      answer: 'You enter the web recruiter command center where your roles, candidate queues, pipeline, outreach, notes, meetings, and agent workflows live together.',
     },
     {
-      question: 'Is this the same as the web app?',
-      answer: 'No. The public browser build is the landing page. The downloaded Windows app opens the full recruiter command center with candidate, role, pipeline, outreach, meetings, and agent workflows.',
+      question: 'Is this the same product as the desktop app?',
+      answer: 'Yes. The web app keeps the same recruiter command center experience, adapted for browser-based access, login, and shared team workflows.',
     },
     {
       question: 'Can I stay in control before actions happen?',
@@ -970,19 +969,19 @@ function FAQSection() {
       answer: 'Elastic-style retrieval gives the agent fast semantic search, filters, and evidence-backed matching across candidates, roles, notes, workspaces, knowledge, bases, and graph-like context.',
     },
     {
-      question: 'Does the agent handle browser logins?',
-      answer: 'Sensitive logins stay delegated to the user browser. The agent can prepare the work and guide navigation without taking ownership of credentials.',
+      question: 'How do logins work?',
+      answer: 'Authentication happens in the browser with your account. The agent can prepare recruiting work and guide workflows without taking ownership of your credentials.',
     },
     {
-      question: 'Why a Windows desktop app?',
-      answer: 'Recruiting work touches local files, browser sessions, notes, email, and calendar state. A desktop app gives the agent a safer, more controllable workspace for real tasks.',
+      question: 'Why use the web app?',
+      answer: 'The web app makes the recruiter workspace easier to access across machines and teams while keeping review-first controls around sourcing, outreach, and scheduling.',
     },
   ]
 
   const [openIndex, setOpenIndex] = React.useState<number | null>(0)
 
   return (
-    <section className="mx-auto max-w-3xl bg-black px-4 py-24">
+    <section className="mx-auto max-w-3xl bg-black px-4 py-16 sm:py-24">
       <h2 className="mb-12 text-center font-mono text-3xl font-bold text-white md:text-5xl">
         SYSTEM <span className="text-[#1dff00]">FAQ</span>
       </h2>
@@ -1021,19 +1020,19 @@ function FAQSection() {
 
 function CTASection() {
   return (
-    <section className="relative overflow-hidden bg-black py-24">
+    <section className="relative overflow-hidden bg-black py-16 sm:py-24">
       <div className="absolute inset-0 z-0 bg-[#1dff00]/5" />
       <div className="relative z-10 mx-auto px-4 text-center">
-        <h2 className="mb-8 font-mono text-4xl font-bold tracking-tighter text-white md:text-7xl">
+        <h2 className="mb-8 font-mono text-3xl font-bold tracking-tighter text-white sm:text-4xl md:text-7xl">
           YOUR NEXT HIRE
           <br />
           SHOULD NOT <span className="text-[#1dff00]">TAKE ALL NIGHT.</span>
         </h2>
-        <p className="mx-auto mb-12 max-w-2xl font-mono text-xl text-gray-400">
+        <p className="mx-auto mb-10 max-w-2xl font-mono text-base leading-relaxed text-gray-400 sm:mb-12 sm:text-xl">
           Start with your roles. Let Jobraker Recruiter find stronger-fit
           candidates, prepare sharper outreach, and keep your pipeline moving.
         </p>
-        <DownloadButton location="bottom_cta">DOWNLOAD WINDOWS APP</DownloadButton>
+        <AuthButton location="bottom_cta">LOGIN OR SIGN UP</AuthButton>
       </div>
     </section>
   )
@@ -1043,7 +1042,7 @@ function FooterSection() {
   const productLinks = [
     ['Features', '#features-section'],
     ['Workflow', '#workflow-section'],
-    ['Download', WINDOWS_INSTALLER_PATH],
+    ['Login', AUTH_CTA_PATH],
     ['Hackathon', 'https://googlecloudmultiagents.devpost.com/'],
   ]
 
@@ -1127,12 +1126,12 @@ export function RecruiterDownloadLanding() {
     <div className="min-h-screen overflow-x-hidden bg-black font-mono text-white selection:bg-[#1dff00] selection:text-black">
       <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#1dff00]/20 bg-black/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
-          <a href="#top" className="flex cursor-pointer items-center space-x-2">
+          <a href="#top" className="flex min-w-0 cursor-pointer items-center space-x-2">
             <div className="h-8 w-8 overflow-clip rounded">
               <img src="/logo.jpeg" alt="Jobraker Recruiter logo" className="h-full w-full object-cover" />
             </div>
-            <span className="text-xl font-bold tracking-tighter text-white">
-              JOBRAKER <span className="text-[#1dff00]">RECRUITER</span>
+            <span className="truncate text-sm font-bold tracking-tighter text-white min-[420px]:text-base sm:text-xl">
+              JOBRAKER <span className="hidden text-[#1dff00] min-[360px]:inline">RECRUITER</span>
             </span>
           </a>
 
@@ -1142,9 +1141,9 @@ export function RecruiterDownloadLanding() {
             <a href="#faq-section" className="transition-colors hover:text-[#1dff00]">FAQ</a>
           </div>
 
-          <DownloadButton location="nav" variant="solid">
-            DOWNLOAD
-          </DownloadButton>
+          <AuthButton location="nav" variant="solid">
+            LOGIN
+          </AuthButton>
         </div>
       </nav>
 

@@ -1,8 +1,9 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './web-ipc'
 import './index.css'
-import App from './App.tsx'
+import { RecruiterAuthView } from '@/components/recruiter-auth-view'
+import { RecruiterDownloadLanding } from '@/components/recruiter-download-landing'
 import { PostHogProvider } from 'posthog-js/react'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { configureAnalyticsContext } from './lib/analytics'
@@ -15,49 +16,51 @@ if (import.meta.env.DEV) {
   })
 }
 
-// Fetch the stable installation ID from main so renderer + main share one
-// PostHog distinct_id. Falls back to PostHog's auto-generated anonymous ID
-// if the IPC call fails (rare — main is always up before renderer).
-async function bootstrap() {
-  const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY?.trim()
+function Root() {
+  const [pathname, setPathname] = useState(window.location.pathname)
 
-  const app = (
-    <ThemeProvider defaultTheme="dark">
-      <App />
-    </ThemeProvider>
-  )
+  useEffect(() => {
+    const refreshPath = () => setPathname(window.location.pathname)
+    window.addEventListener('popstate', refreshPath)
+    return () => window.removeEventListener('popstate', refreshPath)
+  }, [])
 
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      {posthogKey ? (
-        <PostHogProvider
-          apiKey={posthogKey}
-          options={{
-            api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-            defaults: '2025-11-30' as const,
-          }}
-        >
-          {app}
-        </PostHogProvider>
-      ) : (
-        app
-      )}
-    </StrictMode>,
-  )
-
-  let apiUrl: string | undefined
-  let appVersion: string | undefined
-  try {
-    const result = await window.ipc.invoke('analytics:bootstrap', null)
-    apiUrl = result.apiUrl
-    appVersion = result.appVersion
-  } catch (err) {
-    console.error('[Analytics] Failed to bootstrap web analytics:', err)
+  if (pathname.startsWith('/login')) {
+    return <RecruiterAuthView />
   }
 
-  if (posthogKey) {
-    configureAnalyticsContext({ apiUrl, appVersion })
-  }
+  return <RecruiterDownloadLanding />
 }
 
-bootstrap()
+const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY?.trim()
+const app = (
+  <ThemeProvider defaultTheme="dark">
+    <Root />
+  </ThemeProvider>
+)
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    {posthogKey ? (
+      <PostHogProvider
+        apiKey={posthogKey}
+        options={{
+          api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+          defaults: '2025-11-30' as const,
+        }}
+      >
+        {app}
+      </PostHogProvider>
+    ) : (
+      app
+    )}
+  </StrictMode>,
+)
+
+window.ipc.invoke('analytics:bootstrap', null).then((result) => {
+  if (posthogKey) {
+    configureAnalyticsContext({ apiUrl: result.apiUrl, appVersion: result.appVersion })
+  }
+}).catch((err) => {
+  console.error('[Analytics] Failed to bootstrap web analytics:', err)
+})
