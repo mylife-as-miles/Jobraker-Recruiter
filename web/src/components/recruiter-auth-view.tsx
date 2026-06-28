@@ -62,8 +62,12 @@ function GoogleIcon() {
   )
 }
 
-export function RecruiterAuthView() {
-  const [mode, setMode] = React.useState<AuthMode>('login')
+type RecruiterAuthViewProps = {
+  initialMode?: AuthMode
+}
+
+export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewProps) {
+  const [mode, setMode] = React.useState<AuthMode>(initialMode)
   const [showPassword, setShowPassword] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [email, setEmail] = React.useState('')

@@ -25,7 +25,11 @@ function Root() {
     return () => window.removeEventListener('popstate', refreshPath)
   }, [])
 
-  if (pathname.startsWith('/login')) {
+  if (pathname.startsWith('/signup')) {
+    return <RecruiterAuthView initialMode="signup" />
+  }
+
+  if (pathname.startsWith('/login') || pathname.startsWith('/auth')) {
     return <RecruiterAuthView />
   }
 
