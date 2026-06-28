@@ -7,6 +7,7 @@ import {
   Briefcase,
   Eye,
   EyeOff,
+  KeyRound,
   Lock,
   Mail,
   Search,
@@ -60,6 +61,11 @@ function GoogleIcon() {
       <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
     </svg>
   )
+}
+
+function navigateTo(path: string) {
+  window.history.pushState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
 }
 
 type RecruiterAuthViewProps = {
@@ -116,8 +122,7 @@ export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewPr
       if (error) throw error
 
       toast.success('Welcome back to Jobraker Recruiter.')
-      window.history.pushState({}, '', '/')
-      window.dispatchEvent(new PopStateEvent('popstate'))
+      navigateTo('/')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Authentication failed. Please try again.'
       toast.error(message)
@@ -272,7 +277,11 @@ export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewPr
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">Password</label>
                   {isLogin && (
-                    <button type="button" className="text-xs font-bold text-[#1dff00] hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('/forgot-password')}
+                      className="text-xs font-bold text-[#1dff00] hover:underline"
+                    >
                       Forgot password?
                     </button>
                   )}
@@ -286,7 +295,7 @@ export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewPr
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     className="w-full rounded-lg border border-white/10 bg-[#0b0f16] py-3 pl-10 pr-10 text-sm text-white placeholder:text-neutral-700 transition-all focus:border-[#1dff00] focus:outline-none focus:ring-1 focus:ring-[#1dff00]"
-                    placeholder="••••••••"
+                    placeholder="********"
                   />
                   <button
                     type="button"
@@ -374,6 +383,226 @@ export function RecruiterAuthView({ initialMode = 'login' }: RecruiterAuthViewPr
             )}
           </div>
         </motion.main>
+      </div>
+    </div>
+  )
+}
+
+export function RecruiterForgotPasswordView() {
+  const [email, setEmail] = React.useState('')
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [sentTo, setSentTo] = React.useState('')
+
+  const supabase = React.useMemo(() => createClient(), [])
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsLoading(true)
+
+    const trimmedEmail = email.trim()
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+
+      if (error) throw error
+
+      setSentTo(trimmedEmail)
+      toast.success('Password reset email sent.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not send reset email. Please try again.'
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-[100svh] w-full overflow-x-hidden bg-black font-mono text-white selection:bg-[#1dff00] selection:text-black">
+      <Toaster position="top-right" theme="dark" richColors />
+      <div className="relative flex min-h-[100svh] items-center justify-center px-5 py-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(29,255,0,0.16),transparent_36%),linear-gradient(to_right,rgba(29,255,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(29,255,0,0.04)_1px,transparent_1px)] bg-[size:auto,44px_44px,44px_44px]" />
+        <div className="relative z-10 w-full max-w-md">
+          <div className="mb-10 flex justify-center">
+            <BrandMark />
+          </div>
+
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={formMotion}
+            className="rounded-2xl border border-[#1dff00]/15 bg-[#050807]/90 p-6 shadow-[0_0_70px_rgba(29,255,0,0.10)] backdrop-blur-md sm:p-8"
+          >
+            <button
+              type="button"
+              onClick={() => navigateTo('/login')}
+              className="mb-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-neutral-500 transition-colors hover:text-[#1dff00]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to login
+            </button>
+
+            <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl border border-[#1dff00]/25 bg-[#1dff00]/10 text-[#1dff00]">
+              <KeyRound className="h-6 w-6" />
+            </div>
+
+            <h1 className="text-3xl font-bold tracking-tight text-white">Reset your password</h1>
+            <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+              Enter your recruiter account email and we will send a secure reset link.
+            </p>
+
+            {sentTo ? (
+              <div className="mt-8 rounded-xl border border-[#1dff00]/20 bg-[#1dff00]/10 p-5">
+                <p className="text-sm font-bold text-white">Check your inbox</p>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                  We sent password reset instructions to <span className="text-[#1dff00]">{sentTo}</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('/login')}
+                  className="mt-5 flex w-full items-center justify-center rounded-lg border border-[#1dff00] bg-[#1dff00] py-3 text-sm font-bold text-black transition-colors hover:bg-[#80ff72]"
+                >
+                  Return to login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">Email</label>
+                  <div className="group relative">
+                    <Mail className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-600 transition-colors group-focus-within:text-[#1dff00]" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-[#0b0f16] py-3 pl-10 pr-4 text-sm text-white placeholder:text-neutral-700 transition-all focus:border-[#1dff00] focus:outline-none focus:ring-1 focus:ring-[#1dff00]"
+                      placeholder="name@company.com"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="group flex w-full items-center justify-center gap-2 rounded-lg border border-[#1dff00] bg-[#1dff00] py-3.5 text-sm font-bold text-black shadow-[0_0_24px_rgba(29,255,0,0.22)] transition-all hover:bg-[#80ff72] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isLoading ? (
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+                  ) : (
+                    'Send reset link'
+                  )}
+                </button>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function RecruiterResetPasswordView() {
+  const [password, setPassword] = React.useState('')
+  const [confirmPassword, setConfirmPassword] = React.useState('')
+  const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+
+  const supabase = React.useMemo(() => createClient(), [])
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match.')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+
+      if (error) throw error
+
+      toast.success('Password updated. You can sign in now.')
+      navigateTo('/login')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not update password. Please request a new link.'
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-[100svh] w-full overflow-x-hidden bg-black font-mono text-white selection:bg-[#1dff00] selection:text-black">
+      <Toaster position="top-right" theme="dark" richColors />
+      <div className="relative flex min-h-[100svh] items-center justify-center px-5 py-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(29,255,0,0.16),transparent_36%),linear-gradient(to_right,rgba(29,255,0,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(29,255,0,0.04)_1px,transparent_1px)] bg-[size:auto,44px_44px,44px_44px]" />
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={formMotion}
+          className="relative z-10 w-full max-w-md rounded-2xl border border-[#1dff00]/15 bg-[#050807]/90 p-6 shadow-[0_0_70px_rgba(29,255,0,0.10)] backdrop-blur-md sm:p-8"
+        >
+          <div className="mb-8">
+            <BrandMark />
+          </div>
+
+          <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl border border-[#1dff00]/25 bg-[#1dff00]/10 text-[#1dff00]">
+            <Lock className="h-6 w-6" />
+          </div>
+
+          <h1 className="text-3xl font-bold tracking-tight text-white">Create a new password</h1>
+          <p className="mt-3 text-sm leading-relaxed text-neutral-400">
+            Use a strong password to secure your Jobraker Recruiter workspace.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            {[
+              { label: 'New password', value: password, setValue: setPassword },
+              { label: 'Confirm password', value: confirmPassword, setValue: setConfirmPassword },
+            ].map((field) => (
+              <div key={field.label} className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">{field.label}</label>
+                <div className="group relative">
+                  <Lock className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-600 transition-colors group-focus-within:text-[#1dff00]" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={field.value}
+                    onChange={(event) => field.setValue(event.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-[#0b0f16] py-3 pl-10 pr-10 text-sm text-white placeholder:text-neutral-700 transition-all focus:border-[#1dff00] focus:outline-none focus:ring-1 focus:ring-[#1dff00]"
+                    placeholder="********"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-600 transition-colors hover:text-white"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group flex w-full items-center justify-center gap-2 rounded-lg border border-[#1dff00] bg-[#1dff00] py-3.5 text-sm font-bold text-black shadow-[0_0_24px_rgba(29,255,0,0.22)] transition-all hover:bg-[#80ff72] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isLoading ? (
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+              ) : (
+                'Update password'
+              )}
+            </button>
+          </form>
+        </motion.div>
       </div>
     </div>
   )

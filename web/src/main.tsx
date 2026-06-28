@@ -2,7 +2,11 @@ import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './web-ipc'
 import './index.css'
-import { RecruiterAuthView } from '@/components/recruiter-auth-view'
+import {
+  RecruiterAuthView,
+  RecruiterForgotPasswordView,
+  RecruiterResetPasswordView,
+} from '@/components/recruiter-auth-view'
 import { RecruiterDownloadLanding } from '@/components/recruiter-download-landing'
 import { PostHogProvider } from 'posthog-js/react'
 import { ThemeProvider } from '@/contexts/theme-context'
@@ -16,7 +20,7 @@ if (import.meta.env.DEV) {
   })
 }
 
-function Root() {
+export function Root() {
   const [pathname, setPathname] = useState(window.location.pathname)
 
   useEffect(() => {
@@ -27,6 +31,14 @@ function Root() {
 
   if (pathname.startsWith('/signup')) {
     return <RecruiterAuthView initialMode="signup" />
+  }
+
+  if (pathname.startsWith('/forgot-password')) {
+    return <RecruiterForgotPasswordView />
+  }
+
+  if (pathname.startsWith('/reset-password')) {
+    return <RecruiterResetPasswordView />
   }
 
   if (pathname.startsWith('/login') || pathname.startsWith('/auth')) {
