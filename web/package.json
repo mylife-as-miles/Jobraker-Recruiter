@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node node_modules/typescript/bin/tsc -p ../desktop/apps/x/packages/shared/tsconfig.json && node node_modules/vite/bin/vite.js --host 0.0.0.0",
-    "build": "node node_modules/typescript/bin/tsc -p ../desktop/apps/x/packages/shared/tsconfig.json && node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
+    "dev": "node node_modules/vite/bin/vite.js --host 0.0.0.0",
+    "build": "node node_modules/vite/bin/vite.js build",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "preview": "node node_modules/vite/bin/vite.js preview"
   },
@@ -38,7 +38,6 @@
     "@tiptap/pm": "3.22.4",
     "@tiptap/react": "3.22.4",
     "@tiptap/starter-kit": "3.22.4",
-    "@x/shared": "file:../desktop/apps/x/packages/shared",
     "ai": "^5.0.117",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
