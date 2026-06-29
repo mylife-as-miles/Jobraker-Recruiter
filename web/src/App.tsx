@@ -5,7 +5,7 @@ import { RunEvent, ListRunsResponse } from '@x/shared/src/runs.js';
 import type { LanguageModelUsage, ToolUIPart } from 'ai';
 import './App.css'
 import z from 'zod';
-import { CheckIcon, LoaderIcon, ChevronLeftIcon, ChevronRightIcon, Plus, HistoryIcon, Loader2, Mic, Square, PanelLeftIcon, Briefcase, Users, Send, Workflow, BarChart3 } from 'lucide-react';
+import { CheckIcon, LoaderIcon, ChevronLeftIcon, ChevronRightIcon, Plus, HistoryIcon, Loader2, Mic, Square, PanelLeftIcon, Briefcase, Users, Send, Workflow, BarChart3, Home, Sparkles, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownEditor, type MarkdownEditorHandle } from './components/markdown-editor';
 import { ChatSidebar } from './components/chat-sidebar';
@@ -658,35 +658,122 @@ function RecruiterResponsiveNav({
           })}
         </div>
       </div>
+    </>
+  )
+}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 border-t border-border/50 bg-background/95 px-1.5 pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:hidden">
-        {RECRUITER_MOBILE_TABS.map((tab) => {
-          const Icon = tab.icon
-          const active = screen === tab.screen
-          return (
-            <button
-              key={tab.screen}
-              type="button"
-              onClick={() => onNavigate(tab.screen)}
-              className={cn(
-                'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-semibold transition',
-                active ? 'text-brand' : 'text-muted-foreground hover:text-foreground'
-              )}
-              aria-current={active ? 'page' : undefined}
-            >
-              <span
-                className={cn(
-                  'flex size-8 items-center justify-center rounded-xl transition',
-                  active && 'bg-brand/12 shadow-[0_0_14px_rgba(29,255,0,0.18)]'
-                )}
+function MobileDashboardNav({
+  active,
+  onOpenHome,
+  onOpenRoles,
+  onOpenCandidates,
+  onOpenSourcing,
+  onOpenPipeline,
+  onOpenChat,
+  onOpenAnalytics,
+}: {
+  active: 'home' | 'roles' | 'candidates' | 'sourcing' | 'pipeline' | 'chat' | 'analytics' | null
+  onOpenHome: () => void
+  onOpenRoles: () => void
+  onOpenCandidates: () => void
+  onOpenSourcing: () => void
+  onOpenPipeline: () => void
+  onOpenChat: () => void
+  onOpenAnalytics: () => void
+}) {
+  const [recruitMenuOpen, setRecruitMenuOpen] = useState(false)
+  const isRecruitActive = active === 'candidates' || active === 'sourcing' || active === 'pipeline'
+
+  const tabClass = (isActive: boolean) =>
+    cn(
+      "flex w-full flex-col items-center justify-center py-1 transition-all duration-200",
+      isActive ? "scale-105 text-brand" : "text-muted-foreground hover:text-foreground"
+    )
+
+  const closeAndRun = (action: () => void) => {
+    setRecruitMenuOpen(false)
+    action()
+  }
+
+  return (
+    <>
+      {recruitMenuOpen && (
+        <button
+          type="button"
+          aria-label="Close recruiter menu"
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px] lg:hidden"
+          onClick={() => setRecruitMenuOpen(false)}
+        />
+      )}
+      <nav className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-5 border-t border-border/40 bg-card/90 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl select-none lg:hidden">
+        <button type="button" onClick={() => closeAndRun(onOpenHome)} className={tabClass(active === 'home')} aria-current={active === 'home' ? 'page' : undefined}>
+          <Home className="mb-0.5 size-5" />
+          <span className="text-[10px] font-semibold">Home</span>
+        </button>
+
+        <button type="button" onClick={() => closeAndRun(onOpenRoles)} className={tabClass(active === 'roles')} aria-current={active === 'roles' ? 'page' : undefined}>
+          <Briefcase className="mb-0.5 size-5" />
+          <span className="text-[10px] font-semibold">Roles</span>
+        </button>
+
+        <div className="relative flex items-center justify-center -mt-6">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setRecruitMenuOpen((open) => !open)
+            }}
+            className={cn(
+              "z-50 flex size-12 items-center justify-center rounded-[14px] bg-gradient-to-br from-brand via-brand/90 to-brand/75 text-black shadow-[0_0_20px_rgba(29,255,0,0.45)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(29,255,0,0.6)] active:scale-95",
+              (recruitMenuOpen || isRecruitActive) && "rotate-45"
+            )}
+            title="Recruiter actions"
+            aria-label="Open recruiter menu"
+            aria-expanded={recruitMenuOpen}
+          >
+            <Sparkles className={cn("size-5 transition-transform duration-300", (recruitMenuOpen || isRecruitActive) && "-rotate-45")} />
+          </button>
+
+          {recruitMenuOpen && (
+            <div className="absolute bottom-24 left-1/2 z-50 flex -translate-x-1/2 items-center justify-center">
+              <button
+                type="button"
+                onClick={() => closeAndRun(onOpenCandidates)}
+                className="absolute right-1 flex w-36 translate-x-[-28px] items-center justify-center gap-2 rounded-full border border-border/40 bg-card/95 px-4 py-3 text-sm font-semibold text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_12px_rgba(29,255,0,0.1)] backdrop-blur-xl transition hover:border-brand/30 hover:bg-brand/15 hover:text-brand"
               >
-                <Icon className="size-4" />
-              </span>
-              <span className="truncate">{tab.shortLabel}</span>
-            </button>
-          )
-        })}
-      </div>
+                <Users className="size-4 text-brand" />
+                <span>Talent</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => closeAndRun(onOpenSourcing)}
+                className="absolute left-1 flex w-36 translate-x-[28px] items-center justify-center gap-2 rounded-full border border-border/40 bg-card/95 px-4 py-3 text-sm font-semibold text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_12px_rgba(29,255,0,0.1)] backdrop-blur-xl transition hover:border-brand/30 hover:bg-brand/15 hover:text-brand"
+              >
+                <Send className="size-4 text-brand" />
+                <span>Source</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => closeAndRun(onOpenPipeline)}
+                className="absolute bottom-14 flex w-40 items-center justify-center gap-2 rounded-full border border-border/40 bg-card/95 px-4 py-3 text-sm font-semibold text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_12px_rgba(29,255,0,0.1)] backdrop-blur-xl transition hover:border-brand/30 hover:bg-brand/15 hover:text-brand"
+              >
+                <Workflow className="size-4 text-brand" />
+                <span>Pipeline</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <button type="button" onClick={() => closeAndRun(onOpenChat)} className={tabClass(active === 'chat')} aria-current={active === 'chat' ? 'page' : undefined}>
+          <Crown className="mb-0.5 size-5" />
+          <span className="text-[10px] font-semibold">Chat</span>
+        </button>
+
+        <button type="button" onClick={() => closeAndRun(onOpenAnalytics)} className={tabClass(active === 'analytics')} aria-current={active === 'analytics' ? 'page' : undefined}>
+          <BarChart3 className="mb-0.5 size-5" />
+          <span className="text-[10px] font-semibold">Analytics</span>
+        </button>
+      </nav>
     </>
   )
 }
@@ -5628,7 +5715,7 @@ function App() {
             />
             <SidebarInset
               className={cn(
-                "relative overflow-hidden! min-h-0 min-w-0",
+                "relative overflow-hidden! min-h-0 min-w-0 pb-20 lg:pb-0",
                 insetAnimateMaxWidth && "transition-[max-width] duration-200 ease-linear",
                 shouldCollapseLeftPane && "pointer-events-none select-none"
               )}
@@ -6328,6 +6415,25 @@ function App() {
               </FileCardProvider>
               )}
             </SidebarInset>
+            <MobileDashboardNav
+              active={
+                recruiterScreen === 'roles' ? 'roles'
+                : recruiterScreen === 'candidates' ? 'candidates'
+                : recruiterScreen === 'sourcing' ? 'sourcing'
+                : recruiterScreen === 'pipeline' ? 'pipeline'
+                : recruiterScreen === 'analytics' ? 'analytics'
+                : isHomeOpen ? 'home'
+                : isFullScreenChat ? 'chat'
+                : null
+              }
+              onOpenHome={() => void navigateToView({ type: 'home' })}
+              onOpenRoles={() => openRecruiterScreen('roles')}
+              onOpenCandidates={() => openRecruiterScreen('candidates')}
+              onOpenSourcing={() => openRecruiterScreen('sourcing')}
+              onOpenPipeline={() => openRecruiterScreen('pipeline')}
+              onOpenChat={openChatView}
+              onOpenAnalytics={() => openRecruiterScreen('analytics')}
+            />
 
             {/* Chat sidebar - shown when viewing files/graph */}
             {isRightPaneContext && isChatSidebarOpen && (
