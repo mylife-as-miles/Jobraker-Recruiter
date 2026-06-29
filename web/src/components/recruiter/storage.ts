@@ -1,3 +1,5 @@
+import { createClient } from '@/lib/client'
+
 const PREFIX = 'jobraker-recruiter-ui'
 
 export const RECRUITER_STATE_EVENT = 'jobraker-recruiter-state-change'
@@ -24,6 +26,8 @@ const DB_KEYS = {
 } as const
 
 let lastRecruiterDbJson = ''
+let supabaseSyncTimer: number | undefined
+let lastSupabaseSyncJson = ''
 
 export function loadRecruiterState<T>(key: string, fallback: T): T {
   try {
@@ -42,6 +46,7 @@ export function saveRecruiterState<T>(key: string, value: T): void {
 
     // Asynchronously sync the full database to disk file config/recruiter-db.json
     void syncRecruiterDbToDisk()
+    queueRecruiterDbSupabaseSync()
   } catch {
     /* quota / private mode */
   }
@@ -108,7 +113,7 @@ export async function loadRecruiterDbFromDisk(): Promise<RecruiterDb | null> {
   }
 }
 
-export function applyRecruiterDbToLocalState(db: Partial<RecruiterDb>, source: 'startup' | 'disk' | 'agent' = 'disk'): void {
+export function applyRecruiterDbToLocalState(db: Partial<RecruiterDb>, source: 'startup' | 'disk' | 'agent' | 'supabase' = 'disk'): void {
   try {
     const normalized = normalizeRecruiterDb(db)
     lastRecruiterDbJson = JSON.stringify(normalized, null, 2)
@@ -134,6 +139,135 @@ export async function initializeRecruiterDbFromDisk(): Promise<void> {
     return
   }
   await syncRecruiterDbToDisk()
+}
+
+function checksum(value: string): string {
+  let hash = 0
+  for (let i = 0; i < value.length; i++) {
+    hash = ((hash << 5) - hash + value.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash).toString(36)
+}
+
+async function getCurrentUserId(): Promise<string | null> {
+  const {
+    data: { user },
+  } = await createClient().auth.getUser()
+  return user?.id ?? null
+}
+
+async function ensureRecruiterWorkspace(): Promise<string | null> {
+  const supabase = createClient()
+  const userId = await getCurrentUserId()
+  if (!userId) return null
+
+  const existing = await supabase
+    .from('recruiter_workspaces')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (existing.error) throw existing.error
+  if (existing.data?.id) return existing.data.id as string
+
+  const created = await supabase
+    .from('recruiter_workspaces')
+    .insert({ user_id: userId, name: 'Jobraker Recruiter Workspace' })
+    .select('id')
+    .single()
+
+  if (created.error) {
+    const raced = await supabase
+      .from('recruiter_workspaces')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (raced.error) throw raced.error
+    return (raced.data?.id as string | undefined) ?? null
+  }
+
+  return created.data.id as string
+}
+
+export async function loadRecruiterDbFromSupabase(): Promise<RecruiterDb | null> {
+  try {
+    const workspaceId = await ensureRecruiterWorkspace()
+    if (!workspaceId) return null
+
+    const { data, error } = await createClient()
+      .from('recruiter_local_snapshots')
+      .select('payload')
+      .eq('workspace_id', workspaceId)
+      .eq('source_path', RECRUITER_DB_PATH)
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) throw error
+    const payload = data?.payload as Partial<RecruiterDb> | null | undefined
+    if (!payload) return null
+
+    const db = normalizeRecruiterDb(payload)
+    lastSupabaseSyncJson = JSON.stringify(db)
+    return db
+  } catch (err) {
+    console.warn('Recruiter Supabase snapshot not available yet', err)
+    return null
+  }
+}
+
+export async function syncRecruiterDbToSupabase(): Promise<void> {
+  try {
+    const workspaceId = await ensureRecruiterWorkspace()
+    if (!workspaceId) return
+
+    const db = getRecruiterDbSnapshot()
+    const json = JSON.stringify(db)
+    if (json === lastSupabaseSyncJson) return
+    lastSupabaseSyncJson = json
+
+    const { error } = await createClient()
+      .from('recruiter_local_snapshots')
+      .insert({
+        workspace_id: workspaceId,
+        source_path: RECRUITER_DB_PATH,
+        payload: db,
+        checksum: checksum(json),
+        synced_at: new Date().toISOString(),
+      })
+
+    if (error) throw error
+  } catch (err) {
+    console.warn('Failed to sync recruiter db to Supabase', err)
+  }
+}
+
+export function queueRecruiterDbSupabaseSync(): void {
+  if (supabaseSyncTimer) window.clearTimeout(supabaseSyncTimer)
+  supabaseSyncTimer = window.setTimeout(() => {
+    void syncRecruiterDbToSupabase()
+  }, 900)
+}
+
+export async function initializeRecruiterDb(): Promise<void> {
+  const remoteDb = await loadRecruiterDbFromSupabase()
+  if (remoteDb) {
+    applyRecruiterDbToLocalState(remoteDb, 'supabase')
+    await syncRecruiterDbToDisk()
+    return
+  }
+
+  const diskDb = await loadRecruiterDbFromDisk()
+  if (diskDb) {
+    applyRecruiterDbToLocalState(diskDb, 'startup')
+    await syncRecruiterDbToSupabase()
+    return
+  }
+
+  await Promise.all([
+    syncRecruiterDbToDisk(),
+    syncRecruiterDbToSupabase(),
+  ])
 }
 
 export async function reloadRecruiterDbFromDisk(source: 'disk' | 'agent' = 'disk'): Promise<void> {

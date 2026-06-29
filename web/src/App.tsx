@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { MarkdownEditor, type MarkdownEditorHandle } from './components/markdown-editor';
 import { ChatSidebar } from './components/chat-sidebar';
 import { RecruiterScreens, type RecruiterScreenId } from './components/recruiter';
-import { initializeRecruiterDbFromDisk, RECRUITER_DB_PATH, reloadRecruiterDbFromDisk } from './components/recruiter/storage';
+import { initializeRecruiterDb, RECRUITER_DB_PATH, reloadRecruiterDbFromDisk } from './components/recruiter/storage';
 import { ChatAssistantRow } from './components/chat-assistant-row';
 import { ChatEmptyState } from './components/chat-empty-state';
 import { ChatInputWithMentions, type StagedAttachment } from './components/chat-input-with-mentions';
@@ -76,7 +76,6 @@ import { ensureMarkdownExtension, normalizeWikiPath, splitWikiFragment, stripKno
 import { splitFrontmatter, joinFrontmatter } from '@/lib/frontmatter'
 import { extractConferenceLink } from '@/lib/calendar-event'
 import { OnboardingModal } from '@/components/onboarding'
-import { ComposioGoogleMigrationModal } from '@/components/composio-google-migration-modal'
 import { CommandPalette, type CommandPaletteMention, type SearchType } from '@/components/search-dialog'
 import { LiveNoteSidebar } from '@/components/live-note-sidebar'
 import { BackgroundTaskDetail } from '@/components/background-task-detail'
@@ -1146,26 +1145,6 @@ function App() {
   // after the user signs in to Jobraker Recruiter (so we catch users who weren't signed
   // in at startup). The IPC is idempotent — once `dismissed_at` is set on the
   // main side, every subsequent call returns `{shouldShow: false}`.
-  useEffect(() => {
-    const run = async () => {
-      try {
-        const result = await window.ipc.invoke('migration:check-composio-google', null)
-        if (result.shouldShow) {
-          setShowComposioGoogleMigration(true)
-        }
-      } catch (error) {
-        console.error('[migration] check-composio-google failed:', error)
-      }
-    }
-    void run()
-    const cleanup = window.ipc.on('oauth:didConnect', (event) => {
-      if (event.provider === 'jobraker-recruiter' && event.success) {
-        void run()
-      }
-    })
-    return cleanup
-  }, [])
-
   const handleStartRecording = useCallback(() => {
     setIsRecording(true)
     isRecordingRef.current = true
@@ -1470,8 +1449,6 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false)
 
   // One-time Composio→native Google migration modal
-  const [showComposioGoogleMigration, setShowComposioGoogleMigration] = useState(false)
-
   // Search state
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   // Optional scope override for the next time search opens (cleared on close).
@@ -1652,7 +1629,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    void initializeRecruiterDbFromDisk()
+    void initializeRecruiterDb()
   }, [])
 
   // Load initial tree
@@ -6517,17 +6494,6 @@ function App() {
       <OnboardingModal
         open={showOnboarding}
         onComplete={handleOnboardingComplete}
-      />
-      <ComposioGoogleMigrationModal
-        open={showComposioGoogleMigration}
-        onOpenChange={setShowComposioGoogleMigration}
-        onReconnect={() => {
-          // Trigger the jobraker-recruiter-mode Google connect flow. With no credentials
-          // and the user signed in to JobrakerRecruiter, the main process opens the
-          // webapp `/oauth/google/start` URL. The deep link returns and
-          // completeJobrakerRecruiterGoogleConnect persists the tokens.
-          void window.ipc.invoke('oauth:connect', { provider: 'google' })
-        }}
       />
       <Dialog open={showMeetingPermissions} onOpenChange={setShowMeetingPermissions}>
         <DialogContent showCloseButton={false}>

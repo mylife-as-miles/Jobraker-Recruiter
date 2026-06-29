@@ -65,11 +65,11 @@ import { cn } from "@/lib/utils"
 import { SettingsDialog } from "@/components/settings-dialog"
 import { extractConferenceLink } from "@/lib/calendar-event"
 import { useBilling } from "@/hooks/useBilling"
+import { useProfile } from "@/hooks/use-profile"
 import { toast } from "@/lib/toast"
 import { ServiceEvent } from "@x/shared/src/service-events.js"
 import z from "zod"
 import { ROLES } from "@/components/recruiter/data"
-import { googleDisplayName } from "@/lib/google-profile"
 
 // Profile shown in the sidebar account card. Edit these to change the
 // displayed recruiter identity (avatar initials are derived from the name).
@@ -437,9 +437,10 @@ export function SidebarContentPanel({
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
 
-  const [profileName, setProfileName] = useState(PROFILE_NAME)
-  const [profileImage, setProfileImage] = useState<string | null>(null)
-  const [profileEmail, setProfileEmail] = useState<string | null>(null)
+  const { user, profile, displayName, subtitle } = useProfile()
+  const profileName = displayName || PROFILE_NAME
+  const profileImage = profile?.avatar_url || null
+  const profileSubtitle = profile?.job_title || user?.email || subtitle || PROFILE_ROLE
 
   const profileInitials = React.useMemo(() => {
     return profileName
@@ -605,23 +606,6 @@ export function SidebarContentPanel({
         const hasError = Object.values(config).some((entry) => Boolean(entry?.error))
         const connected = config['jobraker-recruiter']?.connected ?? false
         
-        // Extract Google profile if connected
-        const googleEntry = config['google'] as {
-          connected?: boolean
-          profileName?: string | null
-          profileImage?: string | null
-          profileEmail?: string | null
-        }
-        if (googleEntry?.connected) {
-          setProfileName(googleDisplayName(googleEntry.profileName, googleEntry.profileEmail, PROFILE_NAME))
-          setProfileImage(googleEntry.profileImage || null)
-          setProfileEmail(googleEntry.profileEmail || null)
-        } else {
-          setProfileName(PROFILE_NAME)
-          setProfileImage(null)
-          setProfileEmail(null)
-        }
-
         if (mounted) {
           setHasOauthError(hasError)
           setIsJobrakerRecruiterConnected(connected)
@@ -708,7 +692,6 @@ export function SidebarContentPanel({
                     src={profileImage}
                     alt={profileName}
                     className="h-full w-full object-cover"
-                    onError={() => setProfileImage(null)}
                   />
                 ) : (
                   profileInitials
@@ -719,7 +702,7 @@ export function SidebarContentPanel({
                 <>
                   <span className="flex min-w-0 flex-1 flex-col text-left leading-tight">
                     <span className="truncate text-sm font-semibold text-foreground">{profileName}</span>
-                    <span className="truncate text-[11px] text-muted-foreground">{profileEmail || PROFILE_ROLE}</span>
+                    <span className="truncate text-[11px] text-muted-foreground">{profileSubtitle}</span>
                   </span>
                   <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:text-foreground" />
                 </>

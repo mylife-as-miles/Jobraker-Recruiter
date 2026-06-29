@@ -5,19 +5,17 @@ import type { Step, OnboardingPath } from "./use-onboarding-state"
 
 const JOBRAKER_RECRUITER_STEPS = [
   { step: 0 as Step, label: "Welcome" },
-  { step: 2 as Step, label: "Google" },
-  { step: 3 as Step, label: "Services" },
-  { step: 4 as Step, label: "Connect" },
-  { step: 5 as Step, label: "Done" },
+  { step: 2 as Step, label: "Services" },
+  { step: 3 as Step, label: "Connect" },
+  { step: 4 as Step, label: "Done" },
 ]
 
 const BYOK_STEPS = [
   { step: 0 as Step, label: "Welcome" },
   { step: 1 as Step, label: "Model" },
-  { step: 2 as Step, label: "Google" },
-  { step: 3 as Step, label: "Services" },
-  { step: 4 as Step, label: "Connect" },
-  { step: 5 as Step, label: "Done" },
+  { step: 2 as Step, label: "Services" },
+  { step: 3 as Step, label: "Connect" },
+  { step: 4 as Step, label: "Done" },
 ]
 
 interface StepIndicatorProps {
