@@ -534,7 +534,7 @@ function ModalContainer({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-6 shadow-2xl backdrop-blur-sm max-h-[85vh] flex flex-col text-white"
+        className="relative z-10 flex max-h-[88vh] w-[calc(100vw-1.5rem)] max-w-lg flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-4 text-white shadow-2xl backdrop-blur-sm sm:p-6"
       >
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-4 shrink-0">
           <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
@@ -668,7 +668,7 @@ function CandidateForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Email Address</label>
           <input
@@ -694,7 +694,7 @@ function CandidateForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Location</label>
           <input
@@ -727,7 +727,7 @@ function CandidateForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Pipeline Stage</label>
           <select
@@ -817,7 +817,7 @@ function CandidateForm({
       <div className="border-t border-zinc-800 pt-3 mt-3">
         <h4 className="font-bold text-zinc-300 mb-2">Startup Fit & Sourcing Data</h4>
         
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="block font-semibold mb-1 text-zinc-300">Growth Trajectory</label>
             <select
@@ -844,7 +844,7 @@ function CandidateForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="block font-semibold mb-1 text-zinc-300">Intent Signal</label>
             <select
@@ -983,7 +983,7 @@ function RoleForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Department</label>
           <input
@@ -1005,7 +1005,7 @@ function RoleForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Location type</label>
           <input
@@ -1031,7 +1031,7 @@ function RoleForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Target Level</label>
           <input
@@ -1574,7 +1574,7 @@ function InterviewScheduleForm({
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block font-semibold mb-1 text-zinc-300">Date</label>
           <input
@@ -1878,7 +1878,7 @@ function ApiSettingsForm({ onCancel }: { onCancel: () => void }) {
                       Only use this if your Kibana deployment exposes Agent Builder MCP. Most Elastic Cloud deployments should use the Elasticsearch URL option instead.
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div>
                       <label className="block font-semibold mb-1 text-zinc-300">Elastic API Key</label>
                       <input
@@ -2157,7 +2157,7 @@ function QuickImportForm({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block font-semibold mb-1 text-zinc-300">Assign Open Role</label>
               <select

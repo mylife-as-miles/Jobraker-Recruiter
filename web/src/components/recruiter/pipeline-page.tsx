@@ -264,7 +264,7 @@ export function PipelinePage({
       />
 
       {/* Stage metrics */}
-      <div className="grid grid-cols-2 gap-2 px-6 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2 px-3 sm:grid-cols-3 sm:px-4 lg:grid-cols-6 lg:px-6">
         {PIPELINE_STAGES.map((stage, i) => (
           <Reveal key={stage} delay={i * 0.04}>
             <div className="recruiter-kpi recruiter-card rounded-xl border border-border/50 p-3 bg-[#050705]/20">
@@ -284,7 +284,7 @@ export function PipelinePage({
         ))}
       </div>
 
-      <div className="mt-4 flex min-h-0 flex-1 gap-4 px-6 pb-4">
+      <div className="mt-4 flex min-h-0 flex-1 gap-4 px-3 pb-4 sm:px-4 lg:px-6">
         {/* Kanban */}
         <div className="recruiter-scroll min-w-0 flex-1 overflow-x-auto overflow-y-hidden">
           {totalCards === 0 ? (
@@ -303,14 +303,14 @@ export function PipelinePage({
               }
             />
           ) : (
-            <div className="flex h-full min-w-max gap-3 pb-2">
+            <div className="flex h-full min-w-max gap-3 pb-2 pr-1">
               {PIPELINE_STAGES.map((stage) => {
                 const ids = filteredBoard[stage] ?? []
                 return (
                   <div
                     key={stage}
                     data-over={overStage === stage}
-                    className="recruiter-kanban-col flex w-[240px] shrink-0 flex-col rounded-2xl border border-border/50 bg-foreground/[0.02] p-2 transition-colors"
+                    className="recruiter-kanban-col flex w-[82vw] max-w-[280px] shrink-0 flex-col rounded-2xl border border-border/50 bg-foreground/[0.02] p-2 transition-colors sm:w-[260px] lg:w-[240px]"
                     onDragOver={(e) => {
                       e.preventDefault()
                       setOverStage(stage)

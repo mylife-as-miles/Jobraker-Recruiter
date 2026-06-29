@@ -234,7 +234,7 @@ export function CandidatesPage({
         />
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 gap-3 px-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 px-3 sm:grid-cols-2 sm:px-4 lg:grid-cols-4 lg:px-6">
           {[
             { label: 'Total Candidates', value: candidatesList.length, delta: CANDIDATE_KPIS.totalDeltaPct, icon: Briefcase },
             { label: 'Shortlisted', value: candidatesList.filter(c => c.stage === 'Shortlisted').length, delta: CANDIDATE_KPIS.shortlistedDeltaPct, icon: Bookmark },
@@ -264,7 +264,7 @@ export function CandidatesPage({
         </div>
 
         {/* Filters */}
-        <div className="mt-4 flex flex-wrap items-center gap-2 px-6">
+        <div className="mt-4 flex flex-wrap items-center gap-2 px-3 sm:px-4 lg:px-6">
           {selectedRoleTitle && (
             <div className="flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] text-brand">
               <span className="font-semibold">Role: {selectedRoleTitle}</span>
@@ -282,7 +282,7 @@ export function CandidatesPage({
           <select
             value={stageFilter}
             onChange={(e) => { setStageFilter(e.target.value as CandidateStage | 'All'); setPage(1) }}
-            className="h-8 rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
+            className="h-8 max-w-full rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
           >
             <option value="All">All Stages</option>
             {(['New', 'Screening', 'In Review', 'Shortlisted', 'Interview', 'Offer', 'Hired'] as CandidateStage[]).map((s) => (
@@ -293,7 +293,7 @@ export function CandidatesPage({
           <select
             value={companyStageFilter}
             onChange={(e) => { setCompanyStageFilter(e.target.value as CompanyStage | 'All'); setPage(1) }}
-            className="h-8 rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
+            className="h-8 max-w-full rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
           >
             <option value="All">All Company Stages</option>
             {(['Seed', 'Series A', 'Series B', 'Growth', 'Enterprise'] as CompanyStage[]).map((cs) => (
@@ -304,7 +304,7 @@ export function CandidatesPage({
           <select
             value={growthFilter}
             onChange={(e) => { setGrowthFilter(e.target.value as GrowthTrajectory | 'All'); setPage(1) }}
-            className="h-8 rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
+            className="h-8 max-w-full rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
           >
             <option value="All">All Trajectories</option>
             {(['Fast', 'Moderate', 'Steady'] as GrowthTrajectory[]).map((gt) => (
@@ -315,7 +315,7 @@ export function CandidatesPage({
           <select
             value={vestingFilter}
             onChange={(e) => { setVestingFilter(e.target.value as VestingStatus | 'All'); setPage(1) }}
-            className="h-8 rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
+            className="h-8 max-w-full rounded-lg border border-border/50 bg-[#0c0d0d] px-2.5 text-[11px] text-muted-foreground outline-none hover:border-brand/30 focus:border-brand/40 cursor-pointer"
           >
             <option value="All">All Vesting Statuses</option>
             {(['Fully Vested', 'Partially Vested', 'Unvested'] as VestingStatus[]).map((vs) => (
@@ -343,7 +343,7 @@ export function CandidatesPage({
 
           <button
             type="button"
-            className="ml-auto flex h-8 items-center gap-1.5 rounded-lg border border-border/50 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-border/50 px-2.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer sm:ml-auto"
           >
             <Filter className="size-3.5" />
             Filters
@@ -351,7 +351,7 @@ export function CandidatesPage({
         </div>
 
         {/* Table */}
-        <Reveal className="mt-4 flex-1 px-6 pb-4" delay={0.1}>
+        <Reveal className="mt-4 flex-1 px-3 pb-4 sm:px-4 lg:px-6" delay={0.1}>
           {candidates.length === 0 ? (
             <EmptyState
               icon={<User className="size-6" />}
@@ -368,8 +368,8 @@ export function CandidatesPage({
               }
             />
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-border/50 bg-[#050705]/20">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto rounded-2xl border border-border/50 bg-[#050705]/20">
+              <table className="min-w-[680px] w-full text-left text-xs sm:min-w-0">
                 <thead>
                   <tr className="border-b border-border/40 bg-foreground/[0.02] text-muted-foreground">
                     <th className="w-10 p-3" />

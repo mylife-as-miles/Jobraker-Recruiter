@@ -5,7 +5,7 @@ import { RunEvent, ListRunsResponse } from '@x/shared/src/runs.js';
 import type { LanguageModelUsage, ToolUIPart } from 'ai';
 import './App.css'
 import z from 'zod';
-import { CheckIcon, LoaderIcon, ChevronLeftIcon, ChevronRightIcon, Plus, HistoryIcon, Loader2, Mic, Square, PanelLeftIcon } from 'lucide-react';
+import { CheckIcon, LoaderIcon, ChevronLeftIcon, ChevronRightIcon, Plus, HistoryIcon, Loader2, Mic, Square, PanelLeftIcon, Briefcase, Users, Send, Workflow, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MarkdownEditor, type MarkdownEditorHandle } from './components/markdown-editor';
 import { ChatSidebar } from './components/chat-sidebar';
@@ -64,6 +64,7 @@ import { ToolPermissionRequestEvent, AskHumanRequestEvent } from '@x/shared/src/
 import {
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -586,6 +587,109 @@ const collectFilePaths = (nodes: TreeNode[]): string[] =>
 
 /** Dedicated recruiter dashboard screens rendered as a full-pane overlay. */
 type RecruiterScreen = 'roles' | 'candidates' | 'pipeline' | 'analytics' | 'sourcing'
+
+const RECRUITER_MOBILE_TABS: Array<{
+  screen: RecruiterScreen
+  label: string
+  shortLabel: string
+  icon: React.ComponentType<{ className?: string }>
+}> = [
+  { screen: 'roles', label: 'Roles', shortLabel: 'Roles', icon: Briefcase },
+  { screen: 'sourcing', label: 'Sourcing', shortLabel: 'Source', icon: Send },
+  { screen: 'candidates', label: 'Candidates', shortLabel: 'Talent', icon: Users },
+  { screen: 'pipeline', label: 'Pipeline', shortLabel: 'Pipeline', icon: Workflow },
+  { screen: 'analytics', label: 'Analytics', shortLabel: 'Stats', icon: BarChart3 },
+]
+
+function RecruiterResponsiveNav({
+  screen,
+  onNavigate,
+}: {
+  screen: RecruiterScreen
+  onNavigate: (screen: RecruiterScreen) => void
+}) {
+  const activeTab = RECRUITER_MOBILE_TABS.find((tab) => tab.screen === screen) ?? RECRUITER_MOBILE_TABS[0]
+
+  return (
+    <>
+      <div className="flex shrink-0 flex-col gap-3 border-b border-border/50 bg-background/95 px-3 py-3 backdrop-blur-xl lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <SidebarTrigger className="size-9 shrink-0 rounded-xl border border-border/60 bg-foreground/5 text-foreground/70 hover:border-brand/35 hover:bg-brand/10 hover:text-brand" />
+            <div className="size-9 shrink-0 overflow-hidden rounded-xl border border-brand/20 bg-brand/10 shadow-[0_0_20px_rgba(29,255,0,0.16)]">
+              <img src="/logo-only.png" alt="Jobraker Recruiter" className="h-full w-full object-cover" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold leading-tight text-foreground">
+                Jobraker <span className="text-brand">Recruiter</span>
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{activeTab.label}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('roles')}
+            className="shrink-0 rounded-xl border border-brand/30 bg-brand/10 px-3 py-2 text-[11px] font-bold text-brand transition hover:bg-brand hover:text-black"
+          >
+            New role
+          </button>
+        </div>
+
+        <div className="recruiter-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5">
+          {RECRUITER_MOBILE_TABS.map((tab) => {
+            const Icon = tab.icon
+            const active = screen === tab.screen
+            return (
+              <button
+                key={tab.screen}
+                type="button"
+                onClick={() => onNavigate(tab.screen)}
+                className={cn(
+                  'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition',
+                  active
+                    ? 'border-brand/40 bg-brand text-black shadow-[0_0_18px_rgba(29,255,0,0.18)]'
+                    : 'border-border/60 bg-foreground/5 text-muted-foreground hover:border-brand/30 hover:text-foreground'
+                )}
+              >
+                <Icon className="size-3.5" />
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 grid h-16 grid-cols-5 border-t border-border/50 bg-background/95 px-1.5 pb-[env(safe-area-inset-bottom)] shadow-[0_-12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:hidden">
+        {RECRUITER_MOBILE_TABS.map((tab) => {
+          const Icon = tab.icon
+          const active = screen === tab.screen
+          return (
+            <button
+              key={tab.screen}
+              type="button"
+              onClick={() => onNavigate(tab.screen)}
+              className={cn(
+                'flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-semibold transition',
+                active ? 'text-brand' : 'text-muted-foreground hover:text-foreground'
+              )}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span
+                className={cn(
+                  'flex size-8 items-center justify-center rounded-xl transition',
+                  active && 'bg-brand/12 shadow-[0_0_14px_rgba(29,255,0,0.18)]'
+                )}
+              >
+                <Icon className="size-4" />
+              </span>
+              <span className="truncate">{tab.shortLabel}</span>
+            </button>
+          )
+        })}
+      </div>
+    </>
+  )
+}
 
 /** A snapshot of which view the user is on */
 type ViewState =
@@ -5711,6 +5815,11 @@ function App() {
                 </div>
               ) : recruiterScreen ? (
                 <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                  <RecruiterResponsiveNav
+                    screen={recruiterScreen}
+                    onNavigate={(screen) => openRecruiterScreen(screen)}
+                  />
+                  <div className="min-h-0 flex-1 overflow-hidden pb-16 lg:pb-0">
                   <RecruiterScreens
                     screen={recruiterScreen}
                     selectedCandidateId={recruiterSelectedCandidateId}
@@ -5729,6 +5838,7 @@ function App() {
                     onOpenEmail={(threadId?: string) => openEmailView(threadId)}
                     onOpenMeetings={openMeetingsView}
                   />
+                  </div>
                 </div>
               ) : isSuggestedTopicsOpen ? (
                 <div className="flex-1 min-h-0 flex flex-col overflow-hidden">

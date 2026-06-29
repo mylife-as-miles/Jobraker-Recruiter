@@ -351,7 +351,7 @@ export function SourcingPage({
         }
       />
 
-      <div className="flex border-b border-zinc-900 bg-zinc-950/40 px-6 shrink-0">
+      <div className="recruiter-scroll flex shrink-0 overflow-x-auto border-b border-zinc-900 bg-zinc-950/40 px-3 sm:px-4 lg:px-6">
         <button
           onClick={() => setActiveTab('queue')}
           className={cn(
@@ -627,7 +627,7 @@ export function SourcingPage({
             {activeItem ? (
               <div className="flex flex-1 min-h-0 flex-col">
                 {/* Header status bar */}
-                <div className="flex items-center justify-between border-b border-zinc-900 bg-zinc-950/20 px-6 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-900 bg-zinc-950/20 px-3 py-4 sm:px-4 lg:px-6">
                   <div className="flex items-center gap-2 min-w-0">
                     <Linkedin className="size-4 text-brand shrink-0" />
                     <span className="text-xs text-zinc-400 font-mono truncate">{activeItem.url}</span>
@@ -682,7 +682,7 @@ export function SourcingPage({
                 </div>
 
                 {/* Main View Area */}
-                <div className="flex-1 overflow-y-auto recruiter-scroll p-6">
+                <div className="recruiter-scroll flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
                   {activeItem.status === 'pending' && (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                       <div className="relative">

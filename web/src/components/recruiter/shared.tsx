@@ -145,15 +145,15 @@ export function RecruiterHeader({
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
 
   return (
-    <div className="flex flex-col gap-4 px-6 pt-6 pb-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="flex flex-col gap-3 px-3 pb-3 pt-4 sm:px-4 lg:flex-row lg:items-start lg:justify-between lg:px-6 lg:pt-6 lg:pb-4">
       <div className="min-w-0">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+        <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">{title}</h1>
+        <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground sm:text-sm">{subtitle}</p>
       </div>
-      <div className="flex items-center gap-2.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-2.5">
         <div 
           onClick={onOpenSearch}
-          className="recruiter-search group relative hidden md:flex cursor-pointer"
+          className="recruiter-search group relative hidden min-w-0 md:flex cursor-pointer"
         >
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -174,7 +174,7 @@ export function RecruiterHeader({
               duration: 3500,
             })
           }}
-          className="relative flex size-10 items-center justify-center rounded-xl border border-border/60 bg-foreground/5 text-muted-foreground transition hover:border-brand/30 hover:text-foreground cursor-pointer"
+          className="relative flex size-9 items-center justify-center rounded-xl border border-border/60 bg-foreground/5 text-muted-foreground transition hover:border-brand/30 hover:text-foreground cursor-pointer sm:size-10"
           aria-label="Notifications"
         >
           <Bell className="size-4.5" />
@@ -188,7 +188,7 @@ export function RecruiterHeader({
           <button
             type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="recruiter-new-btn flex h-10 items-center gap-1.5 rounded-xl bg-brand px-4 text-sm font-semibold text-black transition hover:brightness-110 cursor-pointer"
+            className="recruiter-new-btn flex h-9 items-center gap-1.5 rounded-xl bg-brand px-3 text-xs font-semibold text-black transition hover:brightness-110 cursor-pointer sm:h-10 sm:px-4 sm:text-sm"
           >
             <Plus className="size-4" />
             <span>New</span>

@@ -211,7 +211,7 @@ export function AnalyticsPage({
 
   if (loading) {
     return (
-      <PageTransition className="analytics-shot recruiter-scroll flex h-full min-h-0 flex-col overflow-auto p-6">
+      <PageTransition className="analytics-shot recruiter-scroll flex h-full min-h-0 flex-col overflow-auto p-3 sm:p-4 lg:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <Skeleton className="h-8 w-40" />
@@ -238,7 +238,7 @@ export function AnalyticsPage({
 
   if (roles.length === 0 && candidates.length === 0) {
     return (
-      <PageTransition className="recruiter-scroll flex h-full flex-col overflow-auto p-6 bg-background">
+      <PageTransition className="recruiter-scroll flex h-full flex-col overflow-auto bg-background p-3 sm:p-4 lg:p-6">
         <header className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Analytics</h1>
           <p className="text-sm text-muted-foreground">Data-driven insights to optimize your recruiting.</p>
@@ -265,7 +265,7 @@ export function AnalyticsPage({
   }
 
   return (
-    <PageTransition className="analytics-shot recruiter-scroll flex h-full min-h-0 flex-col overflow-auto px-6 pb-8 pt-5 text-white">
+    <PageTransition className="analytics-shot recruiter-scroll flex h-full min-h-0 flex-col overflow-auto px-3 pb-8 pt-4 text-white sm:px-4 lg:px-6 lg:pt-5">
       <header className="analytics-topbar">
         <div className="min-w-0">
           <h1 className="text-[25px] font-semibold leading-none tracking-[-0.04em] text-white">Analytics</h1>
@@ -307,7 +307,7 @@ export function AnalyticsPage({
               {isNotificationsOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setIsNotificationsOpen(false)} />
-                  <div className="absolute right-0 mt-2 z-45 w-[280px] rounded-xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md text-white text-left">
+                <div className="absolute right-0 mt-2 z-45 w-[min(280px,calc(100vw-2rem))] rounded-xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md text-white text-left">
                     <div className="border-b border-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-400">
                       Notifications
                     </div>
@@ -708,26 +708,28 @@ function TimeToFillTable({
           No roles match your search.
         </div>
       ) : (
-        <table className="analytics-table text-[11px] text-white">
-          <thead>
-            <tr className="text-zinc-500 font-semibold border-b border-zinc-800 pb-2">
-              <th className="pb-2">Role</th>
-              <th className="pb-2">Time to Fill</th>
-              <th className="pb-2">vs Prior Period</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.role} className="border-b border-zinc-900">
-                <td className="py-2.5">{row.role}</td>
-                <td className="py-2.5 text-white font-semibold">{row.days} days</td>
-                <td className="py-2.5">
-                  <Delta value={-row.deltaDays} suffix=" days" invertColor />
-                </td>
+        <div className="recruiter-scroll overflow-x-auto">
+          <table className="analytics-table min-w-[620px] text-[11px] text-white md:min-w-0">
+            <thead>
+              <tr className="text-zinc-500 font-semibold border-b border-zinc-800 pb-2">
+                <th className="pb-2">Role</th>
+                <th className="pb-2">Time to Fill</th>
+                <th className="pb-2">vs Prior Period</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.role} className="border-b border-zinc-900">
+                  <td className="py-2.5">{row.role}</td>
+                  <td className="py-2.5 text-white font-semibold">{row.days} days</td>
+                  <td className="py-2.5">
+                    <Delta value={-row.deltaDays} suffix=" days" invertColor />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <button
         type="button"

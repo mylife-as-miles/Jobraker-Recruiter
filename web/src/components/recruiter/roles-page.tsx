@@ -124,9 +124,9 @@ export function RolesPage({
         }
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Role list */}
-        <div className="recruiter-scroll w-full max-w-md shrink-0 overflow-auto border-r border-border/50 lg:w-[380px]">
+        <div className="recruiter-scroll max-h-[42vh] w-full shrink-0 overflow-auto border-b border-border/50 lg:max-h-none lg:w-[380px] lg:border-b-0 lg:border-r">
           {filtered.length === 0 ? (
             <div className="p-4">
               <EmptyState
@@ -200,7 +200,7 @@ export function RolesPage({
         </div>
 
         {/* Role detail */}
-        <div className="recruiter-scroll hidden min-w-0 flex-1 overflow-auto lg:block bg-[#050705]/10">
+        <div className="recruiter-scroll min-h-0 min-w-0 flex-1 overflow-auto bg-[#050705]/10">
           <AnimatePresence mode="wait">
             {selected ? (
               <motion.div
@@ -209,7 +209,7 @@ export function RolesPage({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35, ease: RECRUITER_EASE }}
-                className="p-6"
+                className="p-3 sm:p-4 lg:p-6"
               >
                 <RoleDetail
                   role={selected}
