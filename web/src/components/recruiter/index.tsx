@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { X, Loader2, Check, Sparkles, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { recordRecruiterActivity, recordRecruiterAudit } from '@/lib/dynamodb-operational'
 import { AnalyticsPage } from './analytics-page'
 import { CandidatesPage } from './candidates-page'
 import { PipelinePage } from './pipeline-page'
@@ -188,6 +189,21 @@ export function RecruiterScreens({
     } catch {}
 
     toast.success(`Candidate ${newCandidate.name} added successfully!`)
+    recordRecruiterActivity({
+      action: 'candidate.created',
+      entityType: 'candidate',
+      entityId: newCandidate.id,
+      title: `Added candidate ${newCandidate.name}`,
+      message: `${newCandidate.name} entered the ${newCandidate.stage} stage for ${newCandidate.title}.`,
+      metadata: { source: newCandidate.source, stage: newCandidate.stage, role: newCandidate.title },
+    })
+    recordRecruiterAudit({
+      action: 'candidate.created',
+      entityType: 'candidate',
+      entityId: newCandidate.id,
+      title: 'Candidate record created',
+      metadata: { candidateId: newCandidate.id, name: newCandidate.name },
+    })
     setActiveModal(null)
   }
 
@@ -209,6 +225,21 @@ export function RecruiterScreens({
       )
     )
     toast.success('Candidate profile updated!')
+    recordRecruiterActivity({
+      action: 'candidate.updated',
+      entityType: 'candidate',
+      entityId: candidateData.id,
+      title: `Updated candidate ${candidateData.name ?? candidateData.id}`,
+      message: 'Candidate profile details were updated.',
+      metadata: { candidateId: candidateData.id, changedFields: Object.keys(candidateData) },
+    })
+    recordRecruiterAudit({
+      action: 'candidate.updated',
+      entityType: 'candidate',
+      entityId: candidateData.id,
+      title: 'Candidate record updated',
+      metadata: { candidateId: candidateData.id, changedFields: Object.keys(candidateData) },
+    })
     setActiveModal(null)
   }
 
@@ -227,12 +258,44 @@ export function RecruiterScreens({
     } catch {}
 
     toast.success(`Candidate ${candidate?.name ?? ''} removed.`)
+    recordRecruiterActivity({
+      action: 'candidate.removed',
+      entityType: 'candidate',
+      entityId: id,
+      title: `Removed candidate ${candidate?.name ?? id}`,
+      message: 'Candidate was removed from the recruiter workspace.',
+      metadata: { candidateId: id, name: candidate?.name },
+    })
+    recordRecruiterAudit({
+      action: 'candidate.removed',
+      entityType: 'candidate',
+      entityId: id,
+      title: 'Candidate record removed',
+      metadata: { candidateId: id, name: candidate?.name },
+    })
   }
 
   const handleUpdateCandidateStage = (id: string, stage: CandidateStage) => {
+    const candidate = candidates.find((c) => c.id === id)
     setCandidates((prev) =>
       prev.map((c) => (c.id === id ? { ...c, stage, lastActivity: 'Stage changed' } : c))
     )
+    recordRecruiterActivity({
+      action: 'candidate.stage_changed',
+      entityType: 'candidate',
+      entityId: id,
+      title: `Moved ${candidate?.name ?? 'candidate'} to ${stage}`,
+      message: `${candidate?.name ?? 'Candidate'} moved to ${stage}.`,
+      status: stage,
+      metadata: { candidateId: id, previousStage: candidate?.stage, nextStage: stage },
+    })
+    recordRecruiterAudit({
+      action: 'candidate.stage_changed',
+      entityType: 'candidate',
+      entityId: id,
+      title: 'Candidate stage changed',
+      metadata: { candidateId: id, previousStage: candidate?.stage, nextStage: stage },
+    })
   }
 
   const handleUpdateCandidateDirect = (updated: Candidate) => {
@@ -241,6 +304,14 @@ export function RecruiterScreens({
     setCandidates((prev) =>
       prev.map((c) => (c.id === updated.id ? { ...c, ...updated, fit } : c))
     )
+    recordRecruiterActivity({
+      action: 'candidate.updated',
+      entityType: 'candidate',
+      entityId: updated.id,
+      title: `Updated candidate ${updated.name}`,
+      message: 'Candidate fit or profile data was updated.',
+      metadata: { candidateId: updated.id, matchScore: updated.matchScore, startupFitScore: updated.startupFitScore },
+    })
   }
 
 
@@ -276,6 +347,21 @@ export function RecruiterScreens({
 
     setRoles((prev) => [...prev, newRole])
     toast.success(`Role ${newRole.title} created successfully!`)
+    recordRecruiterActivity({
+      action: 'role.created',
+      entityType: 'role',
+      entityId: newRole.id,
+      title: `Created role ${newRole.title}`,
+      message: `${newRole.department} role opened in ${newRole.location}.`,
+      metadata: { roleId: newRole.id, department: newRole.department, status: newRole.status },
+    })
+    recordRecruiterAudit({
+      action: 'role.created',
+      entityType: 'role',
+      entityId: newRole.id,
+      title: 'Role record created',
+      metadata: { roleId: newRole.id, title: newRole.title },
+    })
     setActiveModal(null)
   }
 
@@ -285,16 +371,40 @@ export function RecruiterScreens({
       prev.map((r) => (r.id === roleData.id ? ({ ...r, ...roleData } as Role) : r))
     )
     toast.success('Job role details updated!')
+    recordRecruiterActivity({
+      action: 'role.updated',
+      entityType: 'role',
+      entityId: roleData.id,
+      title: `Updated role ${roleData.title ?? roleData.id}`,
+      message: 'Role details were updated.',
+      metadata: { roleId: roleData.id, changedFields: Object.keys(roleData) },
+    })
+    recordRecruiterAudit({
+      action: 'role.updated',
+      entityType: 'role',
+      entityId: roleData.id,
+      title: 'Role record updated',
+      metadata: { roleId: roleData.id, changedFields: Object.keys(roleData) },
+    })
     setActiveModal(null)
   }
 
   const handleToggleRoleFavorite = (id: string) => {
+    const role = roles.find((r) => r.id === id)
     setRoles((prev) =>
       prev.map((r) => (r.id === id ? { ...r, favorite: !r.favorite } : r))
     )
+    recordRecruiterActivity({
+      action: 'role.favorite_toggled',
+      entityType: 'role',
+      entityId: id,
+      title: `${role?.favorite ? 'Removed favorite' : 'Favorited'} ${role?.title ?? 'role'}`,
+      metadata: { roleId: id, nextFavorite: !role?.favorite },
+    })
   }
 
   const handleScheduleInterview = (candidateId: string, details: { title: string; date: string; time: string; noteAppend?: string }) => {
+    const candidate = candidates.find((c) => c.id === candidateId)
     setCandidates((prev) =>
       prev.map((c) =>
         c.id === candidateId
@@ -320,6 +430,22 @@ export function RecruiterScreens({
     } catch {}
 
     toast.success(`Interview scheduled for ${details.date} at ${details.time}!`)
+    recordRecruiterActivity({
+      action: 'interview.scheduled',
+      entityType: 'candidate',
+      entityId: candidateId,
+      title: `Scheduled ${details.title}`,
+      message: `${candidate?.name ?? 'Candidate'} scheduled for ${details.date} at ${details.time}.`,
+      status: 'Interview',
+      metadata: { candidateId, candidateName: candidate?.name, ...details },
+    })
+    recordRecruiterAudit({
+      action: 'interview.scheduled',
+      entityType: 'candidate',
+      entityId: candidateId,
+      title: 'Interview scheduled',
+      metadata: { candidateId, candidateName: candidate?.name, ...details },
+    })
     setActiveModal(null)
   }
 

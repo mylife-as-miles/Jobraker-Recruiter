@@ -909,6 +909,9 @@ export function ConnectorApiKeysSettings({ dialogOpen }: ConnectorApiKeysSetting
             <p className="text-xs text-muted-foreground">
               Adds an AWS-side operational store for activity, sync jobs, audit events, and fast dashboard state. AWS calls run through Supabase Edge Functions, not directly from the browser.
             </p>
+            <p className="text-xs text-muted-foreground">
+              Use a DynamoDB table with <span className="font-mono">pk</span> as the partition key and <span className="font-mono">sk</span> as the sort key.
+            </p>
             <div className="space-y-2.5">
               <div className="grid gap-2 sm:grid-cols-2">
                 <div className="space-y-1">

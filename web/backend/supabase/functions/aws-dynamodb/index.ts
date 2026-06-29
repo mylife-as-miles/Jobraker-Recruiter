@@ -1,4 +1,11 @@
-import { DescribeTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import {
+  DescribeTableCommand,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  QueryCommand,
+} from '@aws-sdk/client-dynamodb'
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { handleOptions, json, readPayload } from '../_shared/http.ts'
 import { requireWorkspace } from '../_shared/supabase.ts'
 
@@ -17,13 +24,17 @@ type DynamoConfigRow = {
 const maskAccessKey = (value: string | null | undefined) => {
   const key = (value ?? '').trim()
   if (!key) return ''
-  if (key.length <= 8) return `${key.slice(0, 2)}••••`
-  return `${key.slice(0, 4)}••••${key.slice(-4)}`
+  if (key.length <= 8) return `${key.slice(0, 2)}****`
+  return `${key.slice(0, 4)}****${key.slice(-4)}`
 }
 
 const sanitizeRegion = (value: unknown) => String(value ?? '').trim()
 const sanitizeTableName = (value: unknown) => String(value ?? '').trim()
 const sanitizeSecret = (value: unknown) => String(value ?? '').trim()
+const randomId = () => crypto.randomUUID()
+
+const safeRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
 
 const publicConfig = (row: DynamoConfigRow | null) => ({
   configured: Boolean(row?.access_key_id && row?.secret_access_key && row?.region && row?.table_name),
@@ -36,26 +47,110 @@ const publicConfig = (row: DynamoConfigRow | null) => ({
   lastError: row?.last_error ?? null,
 })
 
+const createDynamoClient = (config: {
+  region: string
+  access_key_id?: string
+  secret_access_key?: string
+  accessKeyId?: string
+  secretAccessKey?: string
+}) =>
+  new DynamoDBClient({
+    region: config.region,
+    credentials: {
+      accessKeyId: config.access_key_id ?? config.accessKeyId ?? '',
+      secretAccessKey: config.secret_access_key ?? config.secretAccessKey ?? '',
+    },
+  })
+
+const assertConfigured = (config: DynamoConfigRow | null) => {
+  if (!config?.enabled) {
+    throw new Error('DynamoDB is not configured or enabled.')
+  }
+  return config
+}
+
 const testDynamoTable = async (config: {
   region: string
   tableName: string
   accessKeyId: string
   secretAccessKey: string
 }) => {
-  const client = new DynamoDBClient({
-    region: config.region,
-    credentials: {
-      accessKeyId: config.accessKeyId,
-      secretAccessKey: config.secretAccessKey,
-    },
-  })
-
+  const client = createDynamoClient(config)
   const result = await client.send(new DescribeTableCommand({ TableName: config.tableName }))
+  const keySchema = result.Table?.KeySchema ?? []
+  const hasPartitionKey = keySchema.some((key) => key.AttributeName === 'pk' && key.KeyType === 'HASH')
+  const hasSortKey = keySchema.some((key) => key.AttributeName === 'sk' && key.KeyType === 'RANGE')
+  if (!hasPartitionKey || !hasSortKey) {
+    throw new Error('DynamoDB table must use pk as the partition key and sk as the sort key.')
+  }
   return {
     tableName: result.Table?.TableName ?? config.tableName,
     tableStatus: result.Table?.TableStatus ?? null,
     itemCount: result.Table?.ItemCount ?? null,
   }
+}
+
+const writeOperationalEvent = async (
+  config: DynamoConfigRow,
+  workspaceId: string,
+  userId: string,
+  args: Record<string, unknown>,
+) => {
+  const now = new Date().toISOString()
+  const eventType = String(args.eventType ?? args.type ?? 'activity').toLowerCase()
+  const recordType =
+    eventType === 'audit' ? 'AUDIT' :
+    eventType === 'workflow_state' ? 'WORKFLOW_STATE' :
+    'ACTIVITY'
+  const entityType = String(args.entityType ?? 'workspace')
+  const entityId = String(args.entityId ?? randomId())
+  const action = String(args.action ?? 'updated')
+
+  const item = {
+    pk: `WORKSPACE#${workspaceId}`,
+    sk: recordType === 'WORKFLOW_STATE'
+      ? `WORKFLOW_STATE#${entityType}#${entityId}`
+      : `${recordType}#${now}#${randomId()}`,
+    gsi1pk: `${recordType}#${workspaceId}`,
+    gsi1sk: now,
+    recordType,
+    workspaceId,
+    userId,
+    action,
+    entityType,
+    entityId,
+    title: String(args.title ?? action),
+    message: String(args.message ?? ''),
+    status: args.status ? String(args.status) : undefined,
+    metadata: safeRecord(args.metadata),
+    createdAt: now,
+    updatedAt: now,
+  }
+
+  await createDynamoClient(config).send(new PutItemCommand({
+    TableName: config.table_name,
+    Item: marshall(item, { removeUndefinedValues: true }),
+  }))
+
+  return item
+}
+
+const listOperationalEvents = async (
+  config: DynamoConfigRow,
+  workspaceId: string,
+  recordType: 'ACTIVITY' | 'AUDIT',
+) => {
+  const result = await createDynamoClient(config).send(new QueryCommand({
+    TableName: config.table_name,
+    KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
+    ExpressionAttributeValues: marshall({
+      ':pk': `WORKSPACE#${workspaceId}`,
+      ':prefix': `${recordType}#`,
+    }),
+    ScanIndexForward: false,
+    Limit: 50,
+  }))
+  return (result.Items ?? []).map((item) => unmarshall(item))
 }
 
 Deno.serve(async (req) => {
@@ -164,6 +259,39 @@ Deno.serve(async (req) => {
           .eq('workspace_id', workspaceId)
         if (result.error) throw result.error
         return json(publicConfig(null))
+      }
+
+      case 'aws-dynamodb:recordEvent': {
+        const config = assertConfigured(await loadConfig())
+        const record = await writeOperationalEvent(config, workspaceId, user.id, args)
+        return json({ ok: true, record })
+      }
+
+      case 'aws-dynamodb:listActivity': {
+        const config = assertConfigured(await loadConfig())
+        const items = await listOperationalEvents(config, workspaceId, 'ACTIVITY')
+        return json({ ok: true, items })
+      }
+
+      case 'aws-dynamodb:listAudit': {
+        const config = assertConfigured(await loadConfig())
+        const items = await listOperationalEvents(config, workspaceId, 'AUDIT')
+        return json({ ok: true, items })
+      }
+
+      case 'aws-dynamodb:getWorkflowState': {
+        const config = assertConfigured(await loadConfig())
+        const entityType = String(args.entityType ?? 'background-task')
+        const entityId = String(args.entityId ?? '')
+        if (!entityId) return json({ error: 'Workflow entity ID is required.' }, 400)
+        const result = await createDynamoClient(config).send(new GetItemCommand({
+          TableName: config.table_name,
+          Key: marshall({
+            pk: `WORKSPACE#${workspaceId}`,
+            sk: `WORKFLOW_STATE#${entityType}#${entityId}`,
+          }),
+        }))
+        return json({ ok: true, item: result.Item ? unmarshall(result.Item) : null })
       }
 
       default:
