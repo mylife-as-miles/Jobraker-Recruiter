@@ -633,28 +633,6 @@ function RecruiterResponsiveNav({
           </button>
         </div>
 
-        <div className="recruiter-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5">
-          {RECRUITER_MOBILE_TABS.map((tab) => {
-            const Icon = tab.icon
-            const active = screen === tab.screen
-            return (
-              <button
-                key={tab.screen}
-                type="button"
-                onClick={() => onNavigate(tab.screen)}
-                className={cn(
-                  'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-semibold transition',
-                  active
-                    ? 'border-brand/40 bg-brand text-black shadow-[0_0_18px_rgba(29,255,0,0.18)]'
-                    : 'border-border/60 bg-foreground/5 text-muted-foreground hover:border-brand/30 hover:text-foreground'
-                )}
-              >
-                <Icon className="size-3.5" />
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
       </div>
     </>
   )
