@@ -244,7 +244,7 @@ https://jobraker-recruiter.vercel.app
 Deploy functions from:
 
 ```bash
-cd web/backend/supabase
+cd backend/supabase
 npx supabase functions deploy aws-dynamodb
 npx supabase functions deploy background-tasks
 npx supabase functions deploy chat-runs
@@ -259,15 +259,14 @@ npx supabase functions deploy app-status
 ## Project Structure
 
 ```text
-web/
-  backend/
-    supabase/
-      functions/       Supabase Edge Functions
-      migrations/      Auth, workspace, RLS, and DynamoDB connection schema
-  docs/                Architecture and submission assets
-  public/              Static assets
-  src/                 React web app
-  vercel.json          Vercel SPA deployment config
+backend/
+  supabase/
+    functions/       Supabase Edge Functions
+    migrations/      Auth, workspace, RLS, and DynamoDB connection schema
+docs/                Architecture and submission assets
+public/              Static assets
+src/                 React web app
+vercel.json          Vercel SPA deployment config
 ```
 
 ---
