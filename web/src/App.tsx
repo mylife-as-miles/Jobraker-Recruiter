@@ -64,7 +64,6 @@ import { ToolPermissionRequestEvent, AskHumanRequestEvent } from '@x/shared/src/
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -615,7 +614,6 @@ function RecruiterResponsiveNav({
       <div className="flex shrink-0 flex-col gap-3 border-b border-border/50 bg-background/95 px-3 py-3 backdrop-blur-xl lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <SidebarTrigger className="size-9 shrink-0 rounded-xl border border-border/60 bg-foreground/5 text-foreground/70 hover:border-brand/35 hover:bg-brand/10 hover:text-brand" />
             <div className="size-9 shrink-0 overflow-hidden rounded-xl border border-brand/20 bg-brand/10 shadow-[0_0_20px_rgba(29,255,0,0.16)]">
               <img src="/logo-only.png" alt="Jobraker Recruiter" className="h-full w-full object-cover" />
             </div>
@@ -882,16 +880,31 @@ function ContentHeader({
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
   const isMac = isMacPlatform()
+  const [isDesktopViewport, setIsDesktopViewport] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia('(min-width: 1024px)').matches
+  })
+
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => setIsDesktopViewport(mql.matches)
+    onChange()
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
+
+  const showCollapsedSidebarToggle = isCollapsed && isDesktopViewport
+
   return (
     <header
       className="jobraker-recruiter-titlebar titlebar-drag-region flex h-12 shrink-0 items-center overflow-hidden border-b"
       style={{
-        paddingLeft: isCollapsed ? (collapsedLeftPaddingPx ?? 196) : 12,
+        paddingLeft: showCollapsedSidebarToggle ? (collapsedLeftPaddingPx ?? 196) : 12,
         paddingRight: titlebarRightInsetPx(),
         transition: 'padding-left 200ms linear',
       }}
     >
-      {isCollapsed ? (
+      {showCollapsedSidebarToggle ? (
         <button
           type="button"
           onClick={toggleSidebar}

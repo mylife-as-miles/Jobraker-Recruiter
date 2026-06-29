@@ -690,7 +690,7 @@ export function SidebarContentPanel({
               </span>
             </div>
           )}
-          <SidebarTrigger className="text-foreground/60 hover:text-foreground hover:bg-foreground/5 size-8" />
+          <SidebarTrigger className="hidden size-8 text-foreground/60 hover:bg-foreground/5 hover:text-foreground lg:flex" />
         </div>
         {/* Profile card */}
         <div className={cn("titlebar-no-drag pt-1", isCollapsed ? "px-0 flex justify-center" : "px-3")}>

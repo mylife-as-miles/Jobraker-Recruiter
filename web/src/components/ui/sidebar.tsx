@@ -22,7 +22,7 @@ const SIDEBAR_WIDTH_MIN = 200
 const SIDEBAR_WIDTH_MAX = 480
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_OFFSET = "0px" // Default offset for nested sidebars
-const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760 // Auto-collapse when window narrower than this
+const SIDEBAR_AUTO_COLLAPSE_WIDTH = 1024 // Keep mobile/tablet on bottom navigation.
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -300,7 +300,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"div">) {
       aria-label="Resize Sidebar"
       onMouseDown={handleMouseDown}
       className={cn(
-        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-col-resize group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
+        "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 cursor-col-resize group-data-[side=left]:-right-4 group-data-[side=right]:left-0 lg:flex",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] after:transition-colors",
         "hover:after:bg-sidebar-border",
         isResizing && "after:bg-primary",
