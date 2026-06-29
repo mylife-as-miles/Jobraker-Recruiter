@@ -14,9 +14,12 @@ export default defineConfig({
     tailwindcss(),
   ],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      { find: "@x/shared/src", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src") },
+      { find: "@x/shared/dist", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src") },
+      { find: "@x/shared", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src/index.ts") },
+    ],
   },
   optimizeDeps: {
     // Streamdown lazy-loads a shiki code-block chunk; pre-bundle to avoid stale .vite/deps hashes.

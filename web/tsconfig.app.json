@@ -19,7 +19,10 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@x/shared": ["../desktop/apps/x/packages/shared/src/index.ts"],
+      "@x/shared/src/*": ["../desktop/apps/x/packages/shared/src/*"],
+      "@x/shared/dist/*": ["../desktop/apps/x/packages/shared/src/*"]
     },
 
     /* Linting */
