@@ -193,7 +193,6 @@ This keeps the AWS access path server-side while still allowing the web app to u
 ### Setup
 
 ```bash
-cd web
 npm install
 ```
 
