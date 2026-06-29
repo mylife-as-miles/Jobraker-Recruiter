@@ -1,7 +1,0 @@
-.DS_Store
-.env
-.vscode/
-data/
-.venv/
-.claude/
-.playwright-mcp/

@@ -1,1 +1,0 @@
-select count(*) as n from public.job_listings;

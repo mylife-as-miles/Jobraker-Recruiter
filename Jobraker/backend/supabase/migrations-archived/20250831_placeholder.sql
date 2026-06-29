@@ -1,2 +1,0 @@
--- Placeholder for remote migration version 20250831
--- No-op to reconcile CLI history.

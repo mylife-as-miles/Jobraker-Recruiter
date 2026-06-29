@@ -1,1 +1,0 @@
-select to_regclass('public.job_listings') as job_listings;
