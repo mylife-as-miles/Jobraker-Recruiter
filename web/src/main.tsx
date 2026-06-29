@@ -13,6 +13,7 @@ import { RecruiterOnboardingView } from '@/components/recruiter-onboarding-view'
 import { PostHogProvider } from 'posthog-js/react'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { configureAnalyticsContext } from './lib/analytics'
+import { useAuth } from '@/hooks/use-auth'
 
 // After a Vite dep-cache rebuild, lazy chunks (e.g. streamdown code blocks) can 404
 // until the page reloads. Auto-reload once instead of leaving chat on a blank error boundary.
@@ -22,14 +23,55 @@ if (import.meta.env.DEV) {
   })
 }
 
+function redirectTo(path: string) {
+  window.history.replaceState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
+
 export function Root() {
   const [pathname, setPathname] = useState(window.location.pathname)
+  const { loading, isAuthenticated } = useAuth()
 
   useEffect(() => {
     const refreshPath = () => setPathname(window.location.pathname)
     window.addEventListener('popstate', refreshPath)
     return () => window.removeEventListener('popstate', refreshPath)
   }, [])
+
+  const isAuthRoute =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/auth')
+  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding')
+
+  useEffect(() => {
+    if (loading) return
+    if (isAuthRoute && isAuthenticated) {
+      redirectTo('/dashboard')
+      return
+    }
+    if (isProtectedRoute && !isAuthenticated) {
+      redirectTo('/login')
+    }
+  }, [isAuthRoute, isAuthenticated, isProtectedRoute, loading])
+
+  if (loading && (isAuthRoute || isProtectedRoute)) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-5 text-sm text-zinc-300 shadow-2xl shadow-lime-500/10">
+          Checking your session...
+        </div>
+      </div>
+    )
+  }
+
+  if (isAuthRoute && isAuthenticated) {
+    return null
+  }
+
+  if (isProtectedRoute && !isAuthenticated) {
+    return null
+  }
 
   if (pathname.startsWith('/signup')) {
     return <RecruiterAuthView initialMode="signup" />
