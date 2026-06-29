@@ -19,6 +19,7 @@ export default defineConfig({
       { find: "@x/shared/src", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src") },
       { find: "@x/shared/dist", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src") },
       { find: "@x/shared", replacement: path.resolve(__dirname, "../desktop/apps/x/packages/shared/src/index.ts") },
+      { find: "zod", replacement: path.resolve(__dirname, "./node_modules/zod/index.js") },
     ],
   },
   optimizeDeps: {
