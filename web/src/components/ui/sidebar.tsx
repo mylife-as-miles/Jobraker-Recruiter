@@ -87,6 +87,7 @@ function SidebarProvider({
     const onChange = () => {
       if (mql.matches) setOpen(false)
     }
+    onChange()
     mql.addEventListener("change", onChange)
     return () => mql.removeEventListener("change", onChange)
   }, [setOpen])

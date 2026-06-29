@@ -309,22 +309,22 @@ export function HomeView({
 
   return (
     <PageTransition className="recruiter-scroll h-full overflow-auto bg-black text-white">
-      <div className="flex min-h-full w-full flex-col gap-4 px-6 py-5 lg:px-7">
-        <header className="flex items-start justify-between gap-6">
-          <div>
-            <h1 className="text-[27px] font-medium tracking-[-0.04em] text-white">
+      <div className="flex min-h-full w-full flex-col gap-4 px-3 py-4 sm:px-4 lg:px-7 lg:py-5">
+        <header className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:gap-6">
+          <div className="min-w-0">
+            <h1 className="text-[27px] font-medium tracking-[-0.04em] text-white sm:text-[34px]">
               {greeting()}, Miles <span className="text-[24px]">{'\uD83D\uDC4B'}</span>
             </h1>
             <p className="mt-2 text-sm text-zinc-400">AI agentic recruiting, running for you.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 lg:w-auto">
             <button
               onClick={onOpenSearch}
-              className="flex h-10 w-[318px] items-center gap-3 rounded-xl border border-white/10 bg-[#050608] px-4 text-zinc-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] text-left hover:border-white/20 transition cursor-pointer"
+              className="flex h-10 min-w-0 flex-1 items-center gap-3 rounded-xl border border-white/10 bg-[#050608] px-3 text-left text-zinc-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-white/20 sm:px-4 lg:w-[318px] lg:flex-none cursor-pointer"
             >
               <Search className="h-4 w-4" />
               <span className="flex-1 text-xs text-zinc-600 select-none">Search candidates, roles, or notes</span>
-              <span className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-zinc-400">Ctrl K</span>
+              <span className="hidden rounded-md border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-zinc-400 sm:inline">Ctrl K</span>
             </button>
             
             <div className="relative">
@@ -345,7 +345,7 @@ export function HomeView({
               {isNotificationsOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setIsNotificationsOpen(false)} />
-                  <div className="absolute right-0 mt-2 z-45 w-[280px] rounded-xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md text-white">
+                  <div className="absolute right-0 mt-2 z-45 w-[min(280px,calc(100vw-1.5rem))] rounded-xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md text-white">
                     <div className="border-b border-zinc-800 px-3 py-2 text-xs font-semibold text-zinc-400">
                       Notifications
                     </div>
@@ -439,11 +439,11 @@ export function HomeView({
         </header>
 
         {!isSettled ? (
-          <div className="grid flex-1 grid-cols-3 gap-4">
+          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <PremiumSkeleton className="h-[172px] rounded-xl" />
             <PremiumSkeleton className="h-[172px] rounded-xl" />
             <PremiumSkeleton className="h-[172px] rounded-xl" />
-            <PremiumSkeleton className="col-span-2 h-[378px] rounded-xl" />
+            <PremiumSkeleton className="h-[378px] rounded-xl sm:col-span-2" />
             <PremiumSkeleton className="h-[378px] rounded-xl" />
             <PremiumSkeleton className="h-[230px] rounded-xl" />
             <PremiumSkeleton className="h-[230px] rounded-xl" />
@@ -452,12 +452,12 @@ export function HomeView({
         ) : (
           <>
             <ScrollReveal>
-              <section className="grid grid-cols-3 gap-4">
+              <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
                 {metrics.map((metric) => (
                   <article
                     key={metric.label}
                     onClick={() => onOpenRecruiterScreen?.(metric.screen)}
-                    className="premium-lift group relative overflow-hidden rounded-xl border border-white/10 bg-[#080a0d] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.28)] cursor-pointer hover:border-[#4dff18]/25 transition duration-300"
+                    className="premium-lift group relative overflow-hidden rounded-xl border border-white/10 bg-[#080a0d] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.28)] transition duration-300 hover:border-[#4dff18]/25 sm:p-6 cursor-pointer"
                   >
                     <div className="absolute right-6 top-4 h-20 w-20 rounded-full bg-[#3cff0b]/10 blur-xl transition group-hover:bg-[#3cff0b]/20" />
                     <div className="relative flex items-center justify-between">
@@ -492,20 +492,20 @@ export function HomeView({
             </ScrollReveal>
 
             <ScrollReveal delay={80}>
-              <section className="grid grid-cols-[1fr_372px] gap-4">
+              <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_372px]">
                 <article className="premium-lift relative overflow-hidden rounded-xl border border-white/10 bg-[#07090b] p-0">
                   <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_90%_5%,rgba(72,255,22,0.58),transparent_17%),radial-gradient(circle_at_82%_28%,rgba(62,255,14,0.15),transparent_34%)]" />
                   <div className="absolute right-[-2rem] top-[-2rem] h-48 w-80 rotate-[-18deg] rounded-full border border-[#4cff19]/20 bg-[#4cff19]/10 blur-sm" />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),transparent_40%)]" />
                   <div className="relative">
-                    <div className="px-7 pb-5 pt-6">
-                      <div className="flex items-center gap-3">
+                    <div className="px-4 pb-5 pt-5 sm:px-7 sm:pt-6">
+                      <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-lg font-medium tracking-[-0.03em]">AI Recruiter</h2>
                         <span className="rounded-full border border-[#42ff13]/20 bg-[#42ff13]/10 px-3 py-1 text-xs text-[#5fff2a]">Command Center</span>
                       </div>
 
                       <div className="mt-5 rounded-2xl border border-white/10 bg-[#0d1014]/88 shadow-[inset_0_1px_0_rgba(255,255,255,0.045),0_0_36px_rgba(77,255,24,0.05)]">
-                        <div className="relative min-h-[118px] px-6 pt-5">
+                        <div className="relative min-h-[118px] px-4 pt-5 sm:px-6">
                           <div className="pointer-events-none absolute left-5 top-5 h-7 w-40 rounded-full bg-white/15 blur-2xl" />
                           <textarea
                             value={prompt}
@@ -513,12 +513,12 @@ export function HomeView({
                             onKeyDown={(event) => {
                               if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') openRecruiterChat()
                             }}
-                            className="relative min-h-[72px] w-full resize-none bg-transparent text-xl font-medium leading-8 tracking-[-0.04em] text-white outline-none placeholder:text-zinc-500"
+                            className="relative min-h-[72px] w-full resize-none bg-transparent text-lg font-medium leading-7 tracking-[-0.04em] text-white outline-none placeholder:text-zinc-500 sm:text-xl sm:leading-8"
                             placeholder="Example: Find cybersecurity analysts in Lagos"
                           />
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 border-t border-white/10 px-5 py-4">
+                        <div className="flex flex-col items-stretch justify-between gap-4 border-t border-white/10 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
                           <div className="flex flex-wrap items-center gap-2">
                             {['Job Title', 'Industry', 'Skills', 'Experience', 'Job Location'].map((chip) => (
                               <button
@@ -530,7 +530,7 @@ export function HomeView({
                               </button>
                             ))}
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-end gap-3">
                             <button
                               onClick={handleImprovePrompt}
                               className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-300 transition hover:border-[#4dff18]/25 hover:text-[#4dff18] cursor-pointer"
@@ -550,7 +550,7 @@ export function HomeView({
                       </div>
                     </div>
 
-                    <div className="border-t border-white/10 px-7 pb-6 pt-5">
+                    <div className="border-t border-white/10 px-4 pb-6 pt-5 sm:px-7">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                           <Search className="h-4 w-4 text-[#4dff18]" />
@@ -558,7 +558,7 @@ export function HomeView({
                         </div>
                         <p className="hidden text-sm text-zinc-500 lg:block">Suggested searches based on high-performing recruiter workflows</p>
                       </div>
-                      <div className="mt-4 grid grid-cols-3 gap-3">
+                      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                         {[
                           ['Software Engineer', 'Find TypeScript and Node.js engineers at Series A companies', FileText],
                           ['Data Analyst', 'Find SQL, Python, and dashboarding talent with 3+ years', Briefcase],
@@ -625,7 +625,7 @@ export function HomeView({
             </ScrollReveal>
 
             <ScrollReveal delay={140}>
-              <section className="grid grid-cols-[1.03fr_0.88fr_1.55fr] gap-4">
+              <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.03fr_0.88fr_1.55fr]">
                 <article className="premium-lift rounded-xl border border-white/10 bg-[#07090b] p-5">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium tracking-[-0.03em]">Pipeline Overview</h2>
@@ -645,7 +645,7 @@ export function HomeView({
                         description="Define a job position and source talent to see candidates move through your pipeline."
                       />
                     ) : (
-                      <div className="grid grid-cols-4 gap-5">
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
                         {pipeline.map((stage) => (
                           <button
                             key={stage.label}
@@ -699,7 +699,7 @@ export function HomeView({
                   </div>
                 </article>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2">
                   <article className="premium-lift rounded-xl border border-white/10 bg-[#07090b] p-5">
                     <div className="flex items-center gap-6 border-b border-white/8 pb-3 text-sm">
                       <span className="text-white border-b-2 border-brand pb-3 -mb-3.5 z-10 cursor-pointer">Agenda</span>
