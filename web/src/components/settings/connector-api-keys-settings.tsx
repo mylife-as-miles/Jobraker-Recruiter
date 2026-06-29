@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { CheckCircle2, Globe, Loader2, Volume2, Search } from "lucide-react"
+import { CheckCircle2, Database, Globe, Loader2, Volume2, Search } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,17 @@ import {
 type ElevenLabsVoice = {
   voice_id: string
   name: string
+}
+
+type DynamoDBConfig = {
+  configured: boolean
+  enabled: boolean
+  region: string
+  tableName: string
+  accessKeyIdMasked: string
+  lastTestAt: string | null
+  lastTestStatus: string | null
+  lastError: string | null
 }
 
 const DEFAULT_ELEVENLABS_VOICE_ID = "UgBBYS2sOqTuMpoF3BR0"
@@ -100,6 +111,19 @@ export function ConnectorApiKeysSettings({ dialogOpen }: ConnectorApiKeysSetting
   const [elasticSaving, setElasticSaving] = useState(false)
   const [showElasticInput, setShowElasticInput] = useState(false)
 
+  const [dynamoConfigured, setDynamoConfigured] = useState(false)
+  const [dynamoEnabled, setDynamoEnabled] = useState(true)
+  const [dynamoRegion, setDynamoRegion] = useState("us-east-1")
+  const [dynamoTableName, setDynamoTableName] = useState("")
+  const [dynamoAccessKeyId, setDynamoAccessKeyId] = useState("")
+  const [dynamoSecretAccessKey, setDynamoSecretAccessKey] = useState("")
+  const [dynamoMaskedAccessKeyId, setDynamoMaskedAccessKeyId] = useState("")
+  const [dynamoLastTestStatus, setDynamoLastTestStatus] = useState<string | null>(null)
+  const [dynamoLastError, setDynamoLastError] = useState<string | null>(null)
+  const [dynamoSaving, setDynamoSaving] = useState(false)
+  const [dynamoTesting, setDynamoTesting] = useState(false)
+  const [showDynamoInput, setShowDynamoInput] = useState(false)
+
   const loadElevenLabsVoices = useCallback(async (apiKeyOverride?: string) => {
     setElevenLabsVoicesLoading(true)
     setElevenLabsVoicesError(null)
@@ -164,12 +188,36 @@ export function ConnectorApiKeysSettings({ dialogOpen }: ConnectorApiKeysSetting
     setShowElasticInput(!kibanaUrl || !apiKey)
   }, [])
 
+  const applyDynamoConfig = useCallback((config: DynamoDBConfig) => {
+    setDynamoConfigured(config.configured)
+    setDynamoEnabled(config.enabled || !config.configured)
+    setDynamoRegion(config.region || "us-east-1")
+    setDynamoTableName(config.tableName || "")
+    setDynamoMaskedAccessKeyId(config.accessKeyIdMasked || "")
+    setDynamoLastTestStatus(config.lastTestStatus)
+    setDynamoLastError(config.lastError)
+    setShowDynamoInput(!config.configured)
+    setDynamoAccessKeyId("")
+    setDynamoSecretAccessKey("")
+  }, [])
+
+  const loadDynamoDB = useCallback(async () => {
+    try {
+      const result = await window.ipc.invoke("aws-dynamodb:getConfig", null) as DynamoDBConfig
+      applyDynamoConfig(result)
+    } catch {
+      setDynamoConfigured(false)
+      setShowDynamoInput(true)
+    }
+  }, [applyDynamoConfig])
+
   useEffect(() => {
     if (!dialogOpen) return
     void loadElevenLabs()
     void loadFirecrawl()
     void loadElastic()
-  }, [dialogOpen, loadElevenLabs, loadFirecrawl, loadElastic])
+    void loadDynamoDB()
+  }, [dialogOpen, loadElevenLabs, loadFirecrawl, loadElastic, loadDynamoDB])
 
   const handleSaveElevenLabs = async () => {
     const trimmed = elevenLabsInput.trim()
@@ -367,6 +415,102 @@ export function ConnectorApiKeysSettings({ dialogOpen }: ConnectorApiKeysSetting
       toast.error("Failed to remove Elastic Search config")
     } finally {
       setElasticSaving(false)
+    }
+  }
+
+  const handleSaveDynamoDB = async () => {
+    const region = dynamoRegion.trim()
+    const tableName = dynamoTableName.trim()
+    const accessKeyId = dynamoAccessKeyId.trim()
+    const secretAccessKey = dynamoSecretAccessKey.trim()
+
+    if (!region || !tableName || !accessKeyId || !secretAccessKey) {
+      toast.error("Region, table name, access key ID, and secret access key are required")
+      return
+    }
+
+    setDynamoSaving(true)
+    try {
+      const result = await window.ipc.invoke("aws-dynamodb:saveConfig", {
+        region,
+        tableName,
+        accessKeyId,
+        secretAccessKey,
+        enabled: dynamoEnabled,
+      }) as DynamoDBConfig
+      applyDynamoConfig(result)
+      notifyConnectorsUpdated()
+      toast.success("DynamoDB config saved")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save DynamoDB config")
+    } finally {
+      setDynamoSaving(false)
+    }
+  }
+
+  const handleTestDynamoDB = async () => {
+    const payload = showDynamoInput
+      ? {
+          region: dynamoRegion.trim(),
+          tableName: dynamoTableName.trim(),
+          accessKeyId: dynamoAccessKeyId.trim(),
+          secretAccessKey: dynamoSecretAccessKey.trim(),
+        }
+      : {}
+
+    setDynamoTesting(true)
+    try {
+      const result = await window.ipc.invoke("aws-dynamodb:testConfig", payload) as {
+        ok?: boolean
+        tableName?: string
+        tableStatus?: string | null
+        itemCount?: number | null
+        error?: string
+      }
+      if (!result.ok) {
+        throw new Error(result.error || "DynamoDB connection failed")
+      }
+      setDynamoLastTestStatus("success")
+      setDynamoLastError(null)
+      toast.success(`DynamoDB connected: ${result.tableName ?? dynamoTableName}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "DynamoDB connection failed"
+      setDynamoLastTestStatus("error")
+      setDynamoLastError(message)
+      toast.error(message)
+    } finally {
+      setDynamoTesting(false)
+    }
+  }
+
+  const handleToggleDynamoDB = async (checked: boolean) => {
+    setDynamoEnabled(checked)
+    if (!dynamoConfigured) return
+    setDynamoSaving(true)
+    try {
+      const result = await window.ipc.invoke("aws-dynamodb:setEnabled", { enabled: checked }) as DynamoDBConfig
+      applyDynamoConfig(result)
+      notifyConnectorsUpdated()
+      toast.success(checked ? "DynamoDB enabled" : "DynamoDB disabled")
+    } catch {
+      setDynamoEnabled(!checked)
+      toast.error("Failed to update DynamoDB status")
+    } finally {
+      setDynamoSaving(false)
+    }
+  }
+
+  const handleClearDynamoDB = async () => {
+    setDynamoSaving(true)
+    try {
+      const result = await window.ipc.invoke("aws-dynamodb:removeConfig", null) as DynamoDBConfig
+      applyDynamoConfig(result)
+      notifyConnectorsUpdated()
+      toast.success("DynamoDB disconnected")
+    } catch {
+      toast.error("Failed to remove DynamoDB config")
+    } finally {
+      setDynamoSaving(false)
     }
   }
 
@@ -682,6 +826,181 @@ export function ConnectorApiKeysSettings({ dialogOpen }: ConnectorApiKeysSetting
                   size="sm"
                 >
                   {elasticSaving ? <Loader2 className="size-4 animate-spin" /> : "Save"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* AWS DynamoDB */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+              <Database className="size-4" />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              AWS DynamoDB
+            </span>
+          </div>
+          {dynamoConfigured && (
+            <div className="flex items-center gap-2 pr-3">
+              <span className="text-xs text-muted-foreground">Enabled</span>
+              <Switch
+                checked={dynamoEnabled}
+                onCheckedChange={(checked) => { void handleToggleDynamoDB(checked) }}
+                disabled={dynamoSaving}
+              />
+            </div>
+          )}
+        </div>
+
+        {dynamoConfigured && !showDynamoInput ? (
+          <div className="space-y-3 rounded-md px-3 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-sm text-green-600">
+                <CheckCircle2 className="size-4" />
+                Configured {dynamoEnabled ? "and enabled" : "but disabled"}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDynamoInput(true)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Change
+              </button>
+              <button
+                type="button"
+                onClick={() => { void handleTestDynamoDB() }}
+                disabled={dynamoTesting}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {dynamoTesting ? "Testing..." : "Test"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { void handleClearDynamoDB() }}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="truncate">
+                Table: <span className="font-mono">{dynamoTableName}</span>
+              </div>
+              <div className="truncate">
+                Region: <span className="font-mono">{dynamoRegion}</span>
+              </div>
+              <div className="truncate">
+                Access key: <span className="font-mono">{dynamoMaskedAccessKeyId}</span>
+              </div>
+              {dynamoLastTestStatus === "success" && (
+                <div className="text-green-600">Last test passed</div>
+              )}
+              {dynamoLastTestStatus === "error" && (
+                <div className="text-destructive">Last test failed: {dynamoLastError}</div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3 px-3">
+            <p className="text-xs text-muted-foreground">
+              Adds an AWS-side operational store for activity, sync jobs, audit events, and fast dashboard state. AWS calls run through Supabase Edge Functions, not directly from the browser.
+            </p>
+            <div className="space-y-2.5">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">AWS Region</label>
+                  <Input
+                    type="text"
+                    value={dynamoRegion}
+                    onChange={(e) => setDynamoRegion(e.target.value)}
+                    placeholder="us-east-1"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Table Name</label>
+                  <Input
+                    type="text"
+                    value={dynamoTableName}
+                    onChange={(e) => setDynamoTableName(e.target.value)}
+                    placeholder="jobraker-recruiter-events"
+                    className="h-9"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Access Key ID</label>
+                <Input
+                  type="password"
+                  value={dynamoAccessKeyId}
+                  onChange={(e) => setDynamoAccessKeyId(e.target.value)}
+                  placeholder="Paste your AWS access key ID"
+                  className="h-9"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Secret Access Key</label>
+                <Input
+                  type="password"
+                  value={dynamoSecretAccessKey}
+                  onChange={(e) => setDynamoSecretAccessKey(e.target.value)}
+                  placeholder="Paste your AWS secret access key"
+                  className="h-9"
+                  onKeyDown={(e) => e.key === "Enter" && void handleSaveDynamoDB()}
+                />
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-xs font-medium text-muted-foreground">Enable integration</span>
+                <Switch
+                  checked={dynamoEnabled}
+                  onCheckedChange={setDynamoEnabled}
+                />
+              </div>
+              {dynamoLastTestStatus === "error" && dynamoLastError && (
+                <p className="text-xs text-destructive">{dynamoLastError}</p>
+              )}
+              <div className="flex flex-wrap gap-2 justify-end">
+                {dynamoConfigured && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowDynamoInput(false)
+                      void loadDynamoDB()
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => { void handleTestDynamoDB() }}
+                  disabled={
+                    dynamoTesting ||
+                    !dynamoRegion.trim() ||
+                    !dynamoTableName.trim() ||
+                    (!dynamoConfigured && (!dynamoAccessKeyId.trim() || !dynamoSecretAccessKey.trim()))
+                  }
+                  size="sm"
+                >
+                  {dynamoTesting ? <Loader2 className="size-4 animate-spin" /> : "Test"}
+                </Button>
+                <Button
+                  onClick={() => { void handleSaveDynamoDB() }}
+                  disabled={
+                    dynamoSaving ||
+                    !dynamoRegion.trim() ||
+                    !dynamoTableName.trim() ||
+                    !dynamoAccessKeyId.trim() ||
+                    !dynamoSecretAccessKey.trim()
+                  }
+                  size="sm"
+                >
+                  {dynamoSaving ? <Loader2 className="size-4 animate-spin" /> : "Save"}
                 </Button>
               </div>
             </div>

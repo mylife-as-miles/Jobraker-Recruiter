@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@aws-sdk/client-dynamodb": "npm:@aws-sdk/client-dynamodb@3.947.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.108.2"
+  }
+}

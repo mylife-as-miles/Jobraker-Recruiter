@@ -32,6 +32,7 @@ const functionForChannel = (channel: string) => {
   if (channel.startsWith('bg-task:')) return 'background-tasks'
   if (channel.startsWith('recruiter:')) return 'recruiter-ai'
   if (channel.startsWith('search:')) return 'workspace-search'
+  if (channel.startsWith('aws-dynamodb:')) return 'aws-dynamodb'
   return 'app-status'
 }
 
