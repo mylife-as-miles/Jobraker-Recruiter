@@ -172,7 +172,62 @@ export function matchTone(score: number): { text: string; bg: string; ring: stri
 
 // ───────────────────────── Candidates ─────────────────────────
 
-export const CANDIDATES: Candidate[] = []
+export const CANDIDATES: Candidate[] = [
+  {
+    id: 'track4-candidate-1',
+    name: 'Amara Okafor',
+    title: 'Founding Full Stack Engineer',
+    location: 'Lagos, Nigeria',
+    experienceYears: 7,
+    matchScore: 94,
+    stage: 'Interview',
+    source: 'Quick Import',
+    lastActivity: 'Autopilot prepared interview packet',
+    fit: 'High fit',
+    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'LLM APIs', 'System Design'],
+    highlights: [
+      'Built a recruiting workflow tool used by 12 startup hiring teams',
+      'Shipped AI-assisted screening and email automation at seed-stage pace',
+      'Led frontend and backend delivery for a two-sided marketplace',
+    ],
+    aiInsight: 'Highest-priority candidate: strong full-stack execution, direct recruiting automation experience, and enough startup ambiguity tolerance for a founding role.',
+    note: 'Track 4 demo candidate. Autopilot should recommend immediate interview scheduling with a human approval checkpoint.',
+    email: 'amara.okafor@example.com',
+    companyStages: ['Seed', 'Series A'],
+    growthTrajectory: 'Fast',
+    vestingStatus: 'Partially Vested',
+    intentSignal: 'High Engagement',
+    startupFitScore: 96,
+    startupFitInsight: 'Has repeatedly worked in lean teams where ambiguous requirements became shipped product.',
+    linkedinUrl: 'https://www.linkedin.com/in/amara-okafor',
+    enrichedAt: '2026-07-20T10:00:00.000Z',
+    enrichmentSource: 'manual',
+    headline: 'Founding Full Stack Engineer | AI recruiting workflows | ex-marketplace startup',
+    summary: 'Full-stack product engineer focused on AI workflow software, recruiter productivity, and fast-moving startup teams.',
+    education: [
+      {
+        school: 'University of Lagos',
+        degree: 'B.S.',
+        field: 'Computer Science',
+        startYear: 2013,
+        endYear: 2017,
+      },
+    ],
+    experience: [
+      {
+        company: 'HirePilot Labs',
+        title: 'Lead Full Stack Engineer',
+        startDate: 'Jan 2023',
+        isCurrent: true,
+      },
+    ],
+    emails: ['amara.okafor@example.com'],
+    phones: ['+234 800 000 1001'],
+    socialProfiles: {
+      github: 'https://github.com/amara-okafor',
+    },
+  },
+]
 
 export const CANDIDATE_KPIS = {
   total: 0,
@@ -249,7 +304,43 @@ export type Role = {
   stageCounts: { stage: PipelineStage; count: number }[]
 }
 
-export const ROLES: Role[] = []
+export const ROLES: Role[] = [
+  {
+    id: 'track4-role-1',
+    title: 'Founding Full Stack Engineer',
+    department: 'Engineering',
+    location: 'Remote first',
+    employmentType: 'Full-time',
+    level: 'Senior',
+    salaryRange: '$120k - $170k + equity',
+    status: 'Open',
+    postedAgo: 'Track 4 demo role',
+    applicants: 1,
+    newApplicants: 1,
+    qualityScore: 92,
+    favorite: true,
+    description: 'Build the first production Autopilot Agent workflows for lean recruiting teams: candidate intake, screening, outreach, and interview scheduling with human approval checkpoints.',
+    responsibilities: [
+      'Own full-stack recruiter workflow automation from intake through interview scheduling',
+      'Integrate LLM scoring, external tools, and local-first candidate records',
+      'Design human-in-the-loop checkpoints for outreach and scheduling actions',
+    ],
+    requirements: [
+      '6+ years building production web applications',
+      'Strong React, TypeScript, Node.js, and database experience',
+      'Experience shipping AI-assisted or workflow automation products',
+    ],
+    skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'LLM APIs', 'Workflow Automation'],
+    stageCounts: [
+      { stage: 'Sourced', count: 0 },
+      { stage: 'Contacted', count: 0 },
+      { stage: 'Screening', count: 0 },
+      { stage: 'Interview', count: 1 },
+      { stage: 'Offer', count: 0 },
+      { stage: 'Hired', count: 0 },
+    ],
+  },
+]
 
 // ───────────────────────── Analytics ─────────────────────────
 

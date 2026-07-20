@@ -43,6 +43,7 @@ import {
   RECRUITER_EASE,
 } from './shared'
 import { cn } from '@/lib/utils'
+import { asCandidateStage, stripJsonFence } from './autopilot'
 
 const STAGE_STYLES: Record<CandidateStage, string> = {
   New: 'bg-foreground/10 text-muted-foreground border-border/50',
@@ -651,6 +652,7 @@ function CandidateDetailPanel({
   React.useEffect(() => setDraft(note), [note, candidate.id])
 
   const [isGenerating, setIsGenerating] = React.useState(false)
+  const [isRunningAutopilot, setIsRunningAutopilot] = React.useState(false)
 
   const handleRegenerateAiAnalysis = async () => {
     setIsGenerating(true)
@@ -687,6 +689,57 @@ function CandidateDetailPanel({
       })
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const handleRunAutopilot = async () => {
+    setIsRunningAutopilot(true)
+    try {
+      const targetRole = roles.find(r => r.title === candidate.title) || roles[0]
+      const roleContext = targetRole
+        ? `Title: ${targetRole.title}\nDepartment: ${targetRole.department}\nLocation: ${targetRole.location}\nSalary: ${targetRole.salaryRange}\nDescription: ${targetRole.description}\nRequirements:\n${targetRole.requirements.map(r => `* ${r}`).join('\n')}\nResponsibilities:\n${targetRole.responsibilities.map(r => `* ${r}`).join('\n')}`
+        : `Title: ${candidate.title}`
+
+      const res = await window.ipc.invoke('recruiter:generateLlm', {
+        systemPrompt: 'You are Jobraker Recruiter Autopilot, an AI agent for startup recruiting workflows. Decide the next best recruiting action, but keep risky actions human-approved. Return only valid JSON.',
+        prompt: `Run recruiter autopilot for this candidate and role.\n\nCandidate:\nName: ${candidate.name}\nTitle: ${candidate.title}\nLocation: ${candidate.location}\nEmail: ${candidate.email}\nStage: ${candidate.stage}\nMatch score: ${candidate.matchScore}\nStartup fit score: ${candidate.startupFitScore}\nSkills: ${candidate.skills.join(', ')}\nHighlights: ${candidate.highlights.join('; ')}\nCurrent AI insight: ${candidate.aiInsight}\nCurrent note: ${candidate.note || 'None'}\n\nRole:\n${roleContext}\n\nReturn ONLY this JSON shape:\n{\n  "recommendedStage": "New | Screening | In Review | Shortlisted | Interview | Offer | Hired",\n  "matchScore": number,\n  "startupFitScore": number,\n  "recruiterSummary": "1-2 sentences explaining the decision",\n  "candidateNoteAppend": "short audit note beginning with Qwen Autopilot:",\n  "nextAction": "specific next recruiter action",\n  "humanApprovalRequired": true,\n  "approvalReason": "why the recruiter should approve before outreach or scheduling"\n}`,
+        temperature: 0.2,
+      })
+
+      if (res.error) throw new Error(res.error)
+      const data = JSON.parse(stripJsonFence(res.text || ''))
+      const recommendedStage = asCandidateStage(data.recommendedStage, candidate.stage)
+      const nextAction = String(data.nextAction || 'Review and approve the recommended next step.')
+      const approvalReason = String(data.approvalReason || 'Human approval required before external candidate contact.')
+      const noteAppend = String(data.candidateNoteAppend || `Qwen Autopilot: ${nextAction} Approval checkpoint: ${approvalReason}`)
+      const existingNote = candidate.note?.trim()
+
+      const updatedCandidate = {
+        ...candidate,
+        stage: recommendedStage,
+        matchScore: Number(data.matchScore) || candidate.matchScore,
+        startupFitScore: Number(data.startupFitScore) || candidate.startupFitScore,
+        aiInsight: String(data.recruiterSummary || candidate.aiInsight),
+        note: existingNote ? `${existingNote}\n\n${noteAppend}` : noteAppend,
+        lastActivity: `Qwen Autopilot: ${nextAction}`,
+      }
+
+      if (onUpdateCandidate) {
+        onUpdateCandidate(updatedCandidate)
+      } else {
+        onStageChange(recommendedStage)
+      }
+
+      toast.success('Qwen Autopilot prepared the next recruiting step', {
+        description: nextAction,
+      })
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Qwen Autopilot failed', {
+        description: err?.message || String(err),
+      })
+    } finally {
+      setIsRunningAutopilot(false)
     }
   }
 
@@ -844,6 +897,19 @@ function CandidateDetailPanel({
       </div>
 
       <div className="mt-auto flex flex-col gap-2 border-t border-zinc-800 p-5">
+        <button
+          type="button"
+          onClick={handleRunAutopilot}
+          disabled={isRunningAutopilot}
+          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-violet-400/45 bg-violet-500/10 text-sm font-semibold text-violet-200 transition hover:bg-violet-500/15 disabled:opacity-60 cursor-pointer"
+        >
+          {isRunningAutopilot ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
+          Run Qwen Autopilot
+        </button>
         <button
           type="button"
           onClick={() => onStageChange('Shortlisted')}

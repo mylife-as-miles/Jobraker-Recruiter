@@ -13,6 +13,25 @@ Deno.serve(async (req) => {
       return json({ error: `Unsupported recruiter AI channel: ${channel}` }, 400)
     }
 
+    const dashscopeApiKey = Deno.env.get('DASHSCOPE_API_KEY')
+    if (dashscopeApiKey) {
+      const completion = await fetch(`${Deno.env.get('DASHSCOPE_BASE_URL') ?? 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'}/chat/completions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${dashscopeApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: Deno.env.get('DASHSCOPE_MODEL') ?? 'qwen3.7-plus',
+          messages: [
+            { role: 'system', content: String(args.systemPrompt ?? '') },
+            { role: 'user', content: String(args.prompt ?? '') },
+          ],
+          temperature: Number(args.temperature ?? 0.4),
+        }),
+      })
+      const data = await completion.json()
+      const text = data.choices?.[0]?.message?.content ?? ''
+      return json({ text, error: completion.ok ? undefined : data.error?.message ?? 'Qwen Cloud request failed' })
+    }
+
     const apiKey = Deno.env.get('OPENAI_API_KEY')
     if (!apiKey) {
       return json({ text: '', error: 'OPENAI_API_KEY is not configured for the recruiter-ai Edge Function.' })
