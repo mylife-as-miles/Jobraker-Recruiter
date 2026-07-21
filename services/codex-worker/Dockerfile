@@ -6,10 +6,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install --global @openai/codex@0.144.6
-
-COPY services/codex-worker/package.json ./package.json
-RUN npm install --omit=dev --ignore-scripts
+RUN npm install --global @openai/codex@0.144.6 \
+    && npm init --yes \
+    && npm install --omit=dev --ignore-scripts @supabase/supabase-js@2.108.2
 
 COPY services/codex-worker/server.mjs ./server.mjs
 
