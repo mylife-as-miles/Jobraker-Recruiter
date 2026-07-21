@@ -244,20 +244,23 @@ function AppearanceSettings() {
 
 function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
   const codexBridgeBaseUrl = "http://127.0.0.1:17373"
-  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "bridge-missing" | "error">("checking")
+  const codexBridgeWsUrl = "ws://127.0.0.1:17373/ws/codex"
+  const codexSessionRef = React.useRef<WebSocket | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "thinking" | "executing" | "bridge-missing" | "error">("checking")
   const [selectedModel, setSelectedModel] = useState("gpt-5.6")
   const [notebookPath, setNotebookPath] = useState("")
   const [notebookTask, setNotebookTask] = useState("Open the Jupyter Notebook, run every cell, fix failures, and summarize the result for the recruiter workflow.")
   const [runOutput, setRunOutput] = useState("")
   const [isRunningNotebook, setIsRunningNotebook] = useState(false)
+  const [codexThreadId, setCodexThreadId] = useState<string | null>(null)
 
   const checkCodexStatus = useCallback(async () => {
     try {
       const response = await fetch(`${codexBridgeBaseUrl}/codex/status`)
       if (!response.ok) throw new Error("Codex bridge status check failed")
-      const result = await response.json() as { connected?: boolean; output?: string }
+      const result = await response.json() as { available?: boolean; connected?: boolean; output?: string; version?: string }
       setConnectionStatus(result.connected ? "connected" : "disconnected")
-      if (result.output) setRunOutput(result.output)
+      if (result.output || result.version) setRunOutput([result.version, result.output].filter(Boolean).join("\n"))
     } catch {
       setConnectionStatus("bridge-missing")
     }
@@ -283,38 +286,131 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
   }, [checkCodexStatus])
 
   const handleRunNotebook = useCallback(async () => {
+    if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
+      codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
+      codexSessionRef.current.close()
+    }
+
     setIsRunningNotebook(true)
     setRunOutput("")
-    try {
-      const response = await fetch(`${codexBridgeBaseUrl}/codex/run-notebook`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: selectedModel,
-          notebookPath: notebookPath.trim(),
-          task: notebookTask.trim(),
-        }),
-      })
+    setConnectionStatus("connecting")
 
-      const result = await response.json() as { ok?: boolean; output?: string; error?: string }
-      if (!response.ok || !result.ok) throw new Error(result.error || "Codex notebook run failed")
-      setConnectionStatus("connected")
-      setRunOutput(result.output || "Codex finished the notebook task.")
-      toast.success("Codex finished the notebook run")
+    try {
+      const socket = new WebSocket(codexBridgeWsUrl)
+      codexSessionRef.current = socket
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({
+          type: "start",
+          model: selectedModel,
+          threadId: codexThreadId || undefined,
+          systemPrompt: [
+            "You are Jobraker Recruiter's Codex operator.",
+            "Use local tools carefully, preserve unrelated files, and report verification honestly.",
+            "For notebooks, prefer running cells with the available Jupyter/Python tooling and fixing the smallest safe issue.",
+          ].join("\n"),
+          tools: [],
+          notebookPath: notebookPath.trim(),
+          userMessage: notebookTask.trim(),
+        }))
+      }
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data) as {
+          type: "thread" | "status" | "delta" | "turn_complete" | "error" | "tool_call" | "tool_status"
+          status?: "connecting" | "thinking" | "executing" | "aborted"
+          text?: string
+          threadId?: string
+          message?: string
+          fatal?: boolean
+          name?: string
+        }
+
+        if (message.type === "thread" && message.threadId) {
+          setCodexThreadId(message.threadId)
+          return
+        }
+
+        if (message.type === "status") {
+          if (message.status === "thinking") setConnectionStatus("thinking")
+          else if (message.status === "executing") setConnectionStatus("executing")
+          else if (message.status === "connecting") setConnectionStatus("connecting")
+          else if (message.status === "aborted") setConnectionStatus("connected")
+          return
+        }
+
+        if (message.type === "delta" && message.text) {
+          setRunOutput((current) => `${current}${message.text}`)
+          return
+        }
+
+        if (message.type === "tool_call") {
+          setConnectionStatus("executing")
+          setRunOutput((current) => `${current}\n\n[Codex tool] ${message.name || "tool"}\n`)
+          return
+        }
+
+        if (message.type === "turn_complete") {
+          setConnectionStatus("connected")
+          setIsRunningNotebook(false)
+          if (message.text) setRunOutput(message.text)
+          toast.success("Codex finished the notebook run")
+          socket.close()
+          return
+        }
+
+        if (message.type === "error") {
+          setConnectionStatus("error")
+          setIsRunningNotebook(false)
+          setRunOutput(message.message || "Codex app-server session failed.")
+          if (message.fatal) socket.close()
+        }
+      }
+
+      socket.onerror = () => {
+        setConnectionStatus("bridge-missing")
+        setIsRunningNotebook(false)
+        setRunOutput("Start the Jobraker Codex bridge before running notebook tasks.")
+        toast.error("Codex bridge is required to run notebooks")
+      }
+
+      socket.onclose = () => {
+        codexSessionRef.current = null
+        setIsRunningNotebook(false)
+      }
     } catch (error) {
       setConnectionStatus("bridge-missing")
-      setRunOutput(error instanceof Error ? error.message : "The Codex bridge is required to run notebooks.")
+      setRunOutput(error instanceof Error ? error.message : "The Codex app-server bridge is required to run notebooks.")
       toast.error("Codex bridge is required to run notebooks")
-    } finally {
-      setIsRunningNotebook(false)
     }
-  }, [notebookPath, notebookTask, selectedModel])
+  }, [codexBridgeWsUrl, codexThreadId, notebookPath, notebookTask, selectedModel])
+
+  const handleAbortNotebook = useCallback(() => {
+    if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
+      codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
+      codexSessionRef.current.close()
+    }
+    setIsRunningNotebook(false)
+    setConnectionStatus("connected")
+    toast.info("Codex notebook run stopped")
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
+        codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
+        codexSessionRef.current.close()
+      }
+    }
+  }, [])
 
   const connectionCopy = {
     checking: "Checking local bridge",
     disconnected: "Ready to connect",
     connecting: "Opening ChatGPT sign-in",
     connected: "Connected to Codex",
+    thinking: "Codex thinking",
+    executing: "Codex executing",
     "bridge-missing": "Local bridge needed",
     error: "Connection error",
   }[connectionStatus]
@@ -331,7 +427,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
             <div>
               <h3 className="text-2xl font-semibold tracking-tight">Connect with ChatGPT, run with Codex CLI</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                Jobraker uses your local Codex CLI session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and delegate notebook work without placing Codex credentials in the browser.
+                Jobraker uses your local Codex app-server session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and stream notebook work without placing Codex credentials in the browser.
               </p>
             </div>
           </div>
@@ -343,7 +439,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
                 ? "border-amber-400/45 bg-amber-400/10 text-amber-200"
                 : "border-white/15 bg-white/8 text-white/70"
           )}>
-            {connectionStatus === "connected" ? <CheckCircle2 className="size-3.5" /> : connectionStatus === "connecting" || connectionStatus === "checking" ? <Loader2 className="size-3.5 animate-spin" /> : <AlertTriangle className="size-3.5" />}
+            {connectionStatus === "connected" ? <CheckCircle2 className="size-3.5" /> : connectionStatus === "connecting" || connectionStatus === "checking" || connectionStatus === "thinking" || connectionStatus === "executing" ? <Loader2 className="size-3.5 animate-spin" /> : <AlertTriangle className="size-3.5" />}
             {connectionCopy}
           </div>
         </div>
@@ -379,7 +475,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
           <div>
             <h4 className="text-sm font-semibold">Run a Jupyter Notebook with Codex</h4>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              The bridge runs `codex exec` locally, using the signed-in ChatGPT/Codex CLI session and the model selected above.
+              The bridge starts `codex app-server` locally, then streams a real Codex session using the signed-in ChatGPT/Codex CLI account.
             </p>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={checkCodexStatus}>
@@ -405,15 +501,27 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
               className="min-h-24 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
           </div>
-          <Button
-            type="button"
-            onClick={handleRunNotebook}
-            disabled={isRunningNotebook || !notebookTask.trim()}
-            className="w-full bg-primary text-black hover:bg-primary/90"
-          >
-            {isRunningNotebook ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Terminal className="mr-2 size-4" />}
-            Run Jupyter Notebook with Codex
-          </Button>
+          {isRunningNotebook ? (
+            <Button
+              type="button"
+              onClick={handleAbortNotebook}
+              variant="destructive"
+              className="w-full"
+            >
+              <X className="mr-2 size-4" />
+              Stop Codex Run
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleRunNotebook}
+              disabled={!notebookTask.trim()}
+              className="w-full bg-primary text-black hover:bg-primary/90"
+            >
+              <Terminal className="mr-2 size-4" />
+              Run Jupyter Notebook with Codex
+            </Button>
+          )}
         </div>
 
         {runOutput && (
@@ -424,7 +532,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
       </div>
 
       <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200">
-        The browser never receives Codex tokens or AWS keys. Start the local bridge on your machine when you want the hosted app to trigger Codex CLI actions.
+        The browser never receives Codex tokens or AWS keys. Start the local bridge on your machine when you want the hosted app to stream Codex app-server sessions.
       </div>
     </div>
   )
