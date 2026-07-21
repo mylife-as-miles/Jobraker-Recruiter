@@ -246,12 +246,12 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
   const codexBridgeBaseUrl = "http://127.0.0.1:17373"
   const codexBridgeWsUrl = "ws://127.0.0.1:17373/ws/codex"
   const codexSessionRef = React.useRef<WebSocket | null>(null)
-  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "thinking" | "executing" | "bridge-missing" | "error">("checking")
+  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "thinking" | "executing" | "bridge-missing" | "codex-unavailable" | "error">("checking")
   const [selectedModel, setSelectedModel] = useState("gpt-5.6")
-  const [notebookPath, setNotebookPath] = useState("")
-  const [notebookTask, setNotebookTask] = useState("Open the Jupyter Notebook, run every cell, fix failures, and summarize the result for the recruiter workflow.")
+  const [workspacePath, setWorkspacePath] = useState("")
+  const [codexTask, setCodexTask] = useState("Review this Jobraker Recruiter workspace, carry out the requested recruiter workflow task, fix failures safely, and summarize the result.")
   const [runOutput, setRunOutput] = useState("")
-  const [isRunningNotebook, setIsRunningNotebook] = useState(false)
+  const [isRunningCodexTask, setIsRunningCodexTask] = useState(false)
   const [codexThreadId, setCodexThreadId] = useState<string | null>(null)
 
   const checkCodexStatus = useCallback(async () => {
@@ -259,7 +259,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
       const response = await fetch(`${codexBridgeBaseUrl}/codex/status`)
       if (!response.ok) throw new Error("Codex bridge status check failed")
       const result = await response.json() as { available?: boolean; connected?: boolean; output?: string; version?: string }
-      setConnectionStatus(result.connected ? "connected" : "disconnected")
+      setConnectionStatus(result.available === false ? "codex-unavailable" : result.connected ? "connected" : "disconnected")
       if (result.output || result.version) setRunOutput([result.version, result.output].filter(Boolean).join("\n"))
     } catch {
       setConnectionStatus("bridge-missing")
@@ -285,13 +285,13 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
     }
   }, [checkCodexStatus])
 
-  const handleRunNotebook = useCallback(async () => {
+  const handleRunCodexTask = useCallback(async () => {
     if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
       codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
       codexSessionRef.current.close()
     }
 
-    setIsRunningNotebook(true)
+    setIsRunningCodexTask(true)
     setRunOutput("")
     setConnectionStatus("connecting")
 
@@ -307,11 +307,11 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
           systemPrompt: [
             "You are Jobraker Recruiter's Codex operator.",
             "Use local tools carefully, preserve unrelated files, and report verification honestly.",
-            "For notebooks, prefer running cells with the available Jupyter/Python tooling and fixing the smallest safe issue.",
+            "Run recruiter workflow and workspace tasks with the smallest safe changes.",
           ].join("\n"),
           tools: [],
-          notebookPath: notebookPath.trim(),
-          userMessage: notebookTask.trim(),
+          workspacePath: workspacePath.trim(),
+          userMessage: codexTask.trim(),
         }))
       }
 
@@ -352,16 +352,16 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
 
         if (message.type === "turn_complete") {
           setConnectionStatus("connected")
-          setIsRunningNotebook(false)
+          setIsRunningCodexTask(false)
           if (message.text) setRunOutput(message.text)
-          toast.success("Codex finished the notebook run")
+          toast.success("Codex finished the recruiter task")
           socket.close()
           return
         }
 
         if (message.type === "error") {
           setConnectionStatus("error")
-          setIsRunningNotebook(false)
+          setIsRunningCodexTask(false)
           setRunOutput(message.message || "Codex app-server session failed.")
           if (message.fatal) socket.close()
         }
@@ -369,30 +369,30 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
 
       socket.onerror = () => {
         setConnectionStatus("bridge-missing")
-        setIsRunningNotebook(false)
-        setRunOutput("Start the Jobraker Codex bridge before running notebook tasks.")
-        toast.error("Codex bridge is required to run notebooks")
+        setIsRunningCodexTask(false)
+        setRunOutput("Start the Jobraker Codex bridge before running workspace tasks.")
+        toast.error("Codex bridge is required to run workspace tasks")
       }
 
       socket.onclose = () => {
         codexSessionRef.current = null
-        setIsRunningNotebook(false)
+        setIsRunningCodexTask(false)
       }
     } catch (error) {
       setConnectionStatus("bridge-missing")
-      setRunOutput(error instanceof Error ? error.message : "The Codex app-server bridge is required to run notebooks.")
-      toast.error("Codex bridge is required to run notebooks")
+      setRunOutput(error instanceof Error ? error.message : "The Codex app-server bridge is required to run workspace tasks.")
+      toast.error("Codex bridge is required to run workspace tasks")
     }
-  }, [codexBridgeWsUrl, codexThreadId, notebookPath, notebookTask, selectedModel])
+  }, [codexBridgeWsUrl, codexTask, codexThreadId, selectedModel, workspacePath])
 
-  const handleAbortNotebook = useCallback(() => {
+  const handleAbortCodexTask = useCallback(() => {
     if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
       codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
       codexSessionRef.current.close()
     }
-    setIsRunningNotebook(false)
+    setIsRunningCodexTask(false)
     setConnectionStatus("connected")
-    toast.info("Codex notebook run stopped")
+    toast.info("Codex task stopped")
   }, [])
 
   useEffect(() => {
@@ -412,6 +412,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
     thinking: "Codex thinking",
     executing: "Codex executing",
     "bridge-missing": "Local bridge needed",
+    "codex-unavailable": "Codex CLI unavailable",
     error: "Connection error",
   }[connectionStatus]
 
@@ -427,7 +428,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
             <div>
               <h3 className="text-2xl font-semibold tracking-tight">Connect with ChatGPT, run with Codex CLI</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                Jobraker uses your local Codex app-server session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and stream notebook work without placing Codex credentials in the browser.
+                Jobraker uses your local Codex app-server session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and stream recruiter workspace tasks without placing Codex credentials in the browser.
               </p>
             </div>
           </div>
@@ -435,7 +436,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
             "inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
             connectionStatus === "connected"
               ? "border-primary/45 bg-primary/15 text-primary"
-              : connectionStatus === "bridge-missing"
+              : connectionStatus === "bridge-missing" || connectionStatus === "codex-unavailable"
                 ? "border-amber-400/45 bg-amber-400/10 text-amber-200"
                 : "border-white/15 bg-white/8 text-white/70"
           )}>
@@ -473,7 +474,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
       <div className="rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h4 className="text-sm font-semibold">Run a Jupyter Notebook with Codex</h4>
+            <h4 className="text-sm font-semibold">Run a Recruiter Task with Codex</h4>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
               The bridge starts `codex app-server` locally, then streams a real Codex session using the signed-in ChatGPT/Codex CLI account.
             </p>
@@ -486,25 +487,25 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
 
         <div className="mt-4 grid gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Notebook path</label>
+            <label className="text-xs font-medium text-muted-foreground">Workspace path</label>
             <Input
-              value={notebookPath}
-              onChange={(event) => setNotebookPath(event.target.value)}
-              placeholder="C:\Users\MILES\Documents\analysis\recruiter-workflow.ipynb"
+              value={workspacePath}
+              onChange={(event) => setWorkspacePath(event.target.value)}
+              placeholder="C:\Users\MILES\Documents\Jobraker-Recruiter"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Notebook task</label>
+            <label className="text-xs font-medium text-muted-foreground">Recruiter task</label>
             <textarea
-              value={notebookTask}
-              onChange={(event) => setNotebookTask(event.target.value)}
+              value={codexTask}
+              onChange={(event) => setCodexTask(event.target.value)}
               className="min-h-24 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />
           </div>
-          {isRunningNotebook ? (
+          {isRunningCodexTask ? (
             <Button
               type="button"
-              onClick={handleAbortNotebook}
+              onClick={handleAbortCodexTask}
               variant="destructive"
               className="w-full"
             >
@@ -514,12 +515,12 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
           ) : (
             <Button
               type="button"
-              onClick={handleRunNotebook}
-              disabled={!notebookTask.trim()}
+              onClick={handleRunCodexTask}
+              disabled={!codexTask.trim()}
               className="w-full bg-primary text-black hover:bg-primary/90"
             >
               <Terminal className="mr-2 size-4" />
-              Run Jupyter Notebook with Codex
+              Run Recruiter Task with Codex
             </Button>
           )}
         </div>

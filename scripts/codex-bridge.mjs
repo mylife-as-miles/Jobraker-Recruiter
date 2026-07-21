@@ -40,6 +40,7 @@ function getCorsHeaders(origin) {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Private-Network": "true",
     "Vary": "Origin",
   }
 }
@@ -97,16 +98,16 @@ function openCodexLogin() {
   child.unref()
 }
 
-function buildNotebookPrompt({ notebookPath, task }) {
-  const target = notebookPath
-    ? `Target notebook: ${notebookPath}`
-    : "Target notebook: ask me for the notebook path if the workspace does not make it obvious."
+function buildWorkspaceTaskPrompt({ workspacePath, task }) {
+  const target = workspacePath
+    ? `Target workspace path: ${workspacePath}`
+    : "Target workspace path: use the current Jobraker Recruiter workspace unless the task says otherwise."
 
   return [
     "You are running inside Jobraker Recruiter as a local Codex app-server task.",
     target,
-    "Goal: use Python/Jupyter tooling to run the notebook, inspect failures, apply the smallest safe fix, and report the verification result.",
-    `User task: ${task || "Run the notebook and fix failures."}`,
+    "Goal: complete the recruiter workflow task with local tools, inspect failures, apply the smallest safe fix, and report the verification result.",
+    `User task: ${task || "Inspect the Jobraker Recruiter workspace, complete the requested task, and verify the result."}`,
     "Preserve unrelated files. Summarize commands, edits, verification, and remaining blockers.",
   ].join("\n")
 }
@@ -472,8 +473,8 @@ function handleCodexWebSocket(request, socket) {
             systemPrompt: typeof message.systemPrompt === "string" ? message.systemPrompt : "",
             threadId: typeof message.threadId === "string" ? message.threadId : undefined,
             tools: Array.isArray(message.tools) ? message.tools : [],
-            userMessage: buildNotebookPrompt({
-              notebookPath: typeof message.notebookPath === "string" ? message.notebookPath.trim() : "",
+            userMessage: buildWorkspaceTaskPrompt({
+              workspacePath: typeof message.workspacePath === "string" ? message.workspacePath.trim() : "",
               task: typeof message.userMessage === "string" ? message.userMessage.trim() : "",
             }),
           })
