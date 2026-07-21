@@ -12,6 +12,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://jobraker-recruiter.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
 ]
 const ALLOWED_ORIGINS = new Set(
   (process.env.JOBRAKER_CODEX_ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS.join(","))
@@ -379,7 +381,6 @@ async function startCodexTaskSession(socket, config) {
         cwd: process.cwd(),
         approvalPolicy: "never",
         sandbox: "workspaceWrite",
-        baseInstructions: config.systemPrompt,
         dynamicTools,
         serviceName: "jobraker-recruiter",
       }
@@ -520,7 +521,6 @@ function handleCodexWebSocket(request, socket) {
           if (session) cleanupSession(session)
           session = await startCodexTaskSession(socket, {
             model: typeof message.model === "string" && /^[a-zA-Z0-9._-]{1,80}$/.test(message.model) ? message.model : "gpt-5.6",
-            systemPrompt: typeof message.systemPrompt === "string" ? message.systemPrompt : "",
             threadId: typeof message.threadId === "string" ? message.threadId : undefined,
             tools: Array.isArray(message.tools) ? message.tools : [],
             userMessage: buildWorkspaceTaskPrompt({
