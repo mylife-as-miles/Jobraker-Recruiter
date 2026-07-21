@@ -1,0 +1,33 @@
+name: Validate Vite web app
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fix/supabase-codex-web]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Validate Codex worker syntax
+        run: node --check services/codex-worker/server.mjs
