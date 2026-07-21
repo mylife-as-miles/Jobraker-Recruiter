@@ -30,6 +30,17 @@ Deno.serve(async (req) => {
         return json({ tabs: [], activeTabId: null })
       case 'voice:getConfig':
         return json({ enabled: false })
+      case 'codeMode:getConfig':
+        return json({ enabled: false, webFallback: true })
+      case 'codeMode:setConfig':
+        return json({ success: true, enabled: false, webFallback: true })
+      case 'codeMode:checkAgentStatus':
+        return json({
+          claude: { installed: false, signedIn: false },
+          codex: { installed: false, signedIn: false },
+          webFallback: true,
+          reason: 'Hosted web apps cannot inspect or execute a local Codex CLI without a trusted local bridge.',
+        })
       case 'meeting:checkScreenPermission':
         return json({ granted: false })
       case 'knowledge:history':

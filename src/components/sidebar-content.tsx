@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Mic,
   SquarePen,
-  Plug,
   LoaderIcon,
   Settings,
   Square,
@@ -889,15 +888,6 @@ export function SidebarContentPanel({
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => setConnectionsSettingsOpen(true)} tooltip="Integrations">
-                  <Plug className="size-5 shrink-0" />
-                  <span className="flex-1 truncate">Integrations</span>
-                  {!isCollapsed && hasOauthError && (
-                    <AlertTriangle className="size-3.5 shrink-0 self-center text-amber-500/90" />
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
                 <SettingsDialog>
                   <SidebarMenuButton tooltip="Settings">
                     <Settings className="size-5 shrink-0" />
@@ -988,7 +978,7 @@ export function SidebarContentPanel({
           </button>
         </div>
       ) : null}
-      {/* Bottom actions — reconnect prompt (Settings & Integrations live in nav) */}
+      {/* Bottom actions: reconnect prompt. */}
       {!isCollapsed && hasOauthError && (
         <div className="jobraker-sidebar-footer px-2 py-2">
           <AlertDialog open={showOauthAlert} onOpenChange={setShowOauthAlert}>
