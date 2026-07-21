@@ -17,6 +17,26 @@ const workerConfig = () => {
   return { url, secret, configured: Boolean(url && secret) }
 }
 
+const workerSetupPayload = () => {
+  const config = workerConfig()
+  const missingSecrets = [
+    config.url ? null : 'CODEX_WORKER_URL',
+    config.secret ? null : 'CODEX_WORKER_SECRET',
+  ].filter(Boolean) as string[]
+
+  return {
+    configured: false,
+    available: false,
+    error: 'Codex worker setup required. Deploy services/codex-worker, then set CODEX_WORKER_URL and CODEX_WORKER_SECRET in Supabase Edge Function secrets.',
+    missingSecrets,
+    setup: {
+      worker: 'Deploy services/codex-worker to a persistent Node/Docker host with HTTPS and a persistent JOBRAKER_CODEX_DATA_DIR volume.',
+      supabaseSecrets: ['CODEX_WORKER_URL', 'CODEX_WORKER_SECRET'],
+      workerEnv: ['JOBRAKER_CODEX_WORKER_SECRET', 'SUPABASE_URL', 'SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY'],
+    },
+  }
+}
+
 const callWorker = async (
   body: Record<string, unknown>,
   timeoutMs = 15_000,
@@ -74,11 +94,9 @@ Deno.serve(async (req) => {
 
       if (!config.configured) {
         return json({
-          configured: false,
-          available: false,
+          ...workerSetupPayload(),
           connected: connectionResult.data?.status === 'connected',
           connection: connectionResult.data ?? null,
-          error: 'The hosted Codex worker has not been configured yet.',
         })
       }
 
@@ -128,7 +146,7 @@ Deno.serve(async (req) => {
     }
 
     if (!config.configured) {
-      return json({ error: 'The hosted Codex worker has not been configured yet.' }, 503)
+      return json(workerSetupPayload(), 503)
     }
 
     if (action === 'connect') {

@@ -229,7 +229,7 @@ npm run lint
 
 The app is deployed from the monorepo with:
 
-- Root directory: `web`
+- Root directory: project root
 - Install command: `npm ci --legacy-peer-deps`
 - Build command: `npm run build`
 - Output directory: `dist`
@@ -251,7 +251,16 @@ npx supabase functions deploy workspace-files
 npx supabase functions deploy workspace-search
 npx supabase functions deploy recruiter-ai
 npx supabase functions deploy app-status
+npx supabase functions deploy codex-control
 ```
+
+The Codex settings screen also requires a persistent private worker before ChatGPT/Codex can connect:
+
+```bash
+supabase secrets set --project-ref kazdiejpfujhudqucaaw CODEX_WORKER_URL=https://your-worker-host CODEX_WORKER_SECRET=your-shared-secret
+```
+
+The worker in `services/codex-worker` must be deployed separately with the same `JOBRAKER_CODEX_WORKER_SECRET`, plus `SUPABASE_URL` and a server-only Supabase key.
 
 ---
 

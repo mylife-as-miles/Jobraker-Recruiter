@@ -74,6 +74,12 @@ type StatusResponse = {
   connected?: boolean
   connection?: CodexConnection | null
   error?: string
+  missingSecrets?: string[]
+  setup?: {
+    worker?: string
+    supabaseSecrets?: string[]
+    workerEnv?: string[]
+  }
 }
 
 const invokeCodex = async <T,>(
@@ -123,6 +129,8 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
   const [activeRun, setActiveRun] = useState<CodexRun | null>(null)
   const [runOutput, setRunOutput] = useState("")
   const [workerError, setWorkerError] = useState<string | null>(null)
+  const [workerSetup, setWorkerSetup] = useState<StatusResponse["setup"] | null>(null)
+  const [missingSecrets, setMissingSecrets] = useState<string[]>([])
 
   const isRunning = activeRun
     ? ["queued", "running", "cancelling"].includes(activeRun.status)
@@ -131,6 +139,8 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
   const applyStatus = useCallback((result: StatusResponse) => {
     setConnection(result.connection ?? null)
     setWorkerError(result.error ?? null)
+    setWorkerSetup(result.setup ?? null)
+    setMissingSecrets(result.missingSecrets ?? [])
 
     if (!result.configured || result.available === false) {
       setConnectionStatus("worker-unavailable")
@@ -165,6 +175,8 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to reach the Codex service."
       setWorkerError(message)
+      setWorkerSetup(null)
+      setMissingSecrets([])
       setConnectionStatus("worker-unavailable")
       return false
     }
@@ -354,9 +366,11 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
     queued: "Codex run queued",
     thinking: "Codex thinking",
     executing: "Codex executing",
-    "worker-unavailable": "Codex worker unavailable",
+    "worker-unavailable": workerSetup || missingSecrets.length ? "Worker setup required" : "Codex worker unavailable",
     error: "Codex error",
-  })[connectionStatus], [connection?.plan_type, connectionStatus])
+  })[connectionStatus], [connection?.plan_type, connectionStatus, missingSecrets.length, workerSetup])
+
+  const workerSetupRequired = connectionStatus === "worker-unavailable" && Boolean(workerSetup || missingSecrets.length)
 
   return (
     <div className="space-y-5">
@@ -422,7 +436,7 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
             <Button
               type="button"
               onClick={handleConnect}
-              disabled={connectionStatus === "connecting"}
+              disabled={connectionStatus === "connecting" || workerSetupRequired}
               className="bg-primary text-black hover:bg-primary/90"
             >
               {connectionStatus === "connecting" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Link2 className="mr-2 size-4" />}
@@ -501,7 +515,21 @@ export function CodexAppServerSettings({ dialogOpen }: { dialogOpen: boolean }) 
 
       {(workerError || connectionStatus === "worker-unavailable") && (
         <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-5 text-amber-700 dark:text-amber-200">
-          {workerError || "The hosted Codex worker is unavailable. Configure CODEX_WORKER_URL and CODEX_WORKER_SECRET in Supabase."}
+          {workerSetupRequired ? (
+            <div className="space-y-2">
+              <p className="font-semibold">Codex worker setup required</p>
+              <p>{workerError || "The hosted Codex worker is unavailable."}</p>
+              {missingSecrets.length > 0 && (
+                <p>Missing Supabase secrets: <code>{missingSecrets.join(", ")}</code></p>
+              )}
+              <p>{workerSetup?.worker || "Deploy services/codex-worker to a persistent Node/Docker host before connecting ChatGPT."}</p>
+              <p>
+                Then set <code>CODEX_WORKER_URL</code> and <code>CODEX_WORKER_SECRET</code> in Supabase, and use the same secret as <code>JOBRAKER_CODEX_WORKER_SECRET</code> on the worker.
+              </p>
+            </div>
+          ) : (
+            workerError || "The hosted Codex worker is unavailable. Configure CODEX_WORKER_URL and CODEX_WORKER_SECRET in Supabase."
+          )}
         </div>
       )}
 

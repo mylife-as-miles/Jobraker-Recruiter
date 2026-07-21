@@ -50,6 +50,13 @@ Configure these Supabase function secrets:
 | `CODEX_WORKER_SECRET` | High-entropy shared secret used only between the Edge Function and worker |
 | `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` | Server-only key used for protected Codex state writes |
 
+Example:
+
+```bash
+supabase secrets set --project-ref kazdiejpfujhudqucaaw CODEX_WORKER_URL=https://your-worker-host CODEX_WORKER_SECRET=your-shared-secret
+supabase functions deploy codex-control --project-ref kazdiejpfujhudqucaaw
+```
+
 ### Persistent Codex worker
 
 `services/codex-worker`:
