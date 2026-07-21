@@ -243,176 +243,189 @@ function AppearanceSettings() {
 // --- Codex Settings UI ---
 
 function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
-  void dialogOpen
-  const [testState, setTestState] = useState<{ status: "idle" | "success" }>({ status: "idle" })
-  const codexInstallCommand = "npm i -g @openai/codex"
-  const codexLoginCommand = "codex login"
-  const codexStatusCommand = "codex login status"
-  const codexModelCommand = "codex --model gpt-5.6"
-  const codexTaskCommand = 'codex exec --model gpt-5.6 "Describe the task here"'
+  const codexBridgeBaseUrl = "http://127.0.0.1:17373"
+  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "bridge-missing" | "error">("checking")
+  const [selectedModel, setSelectedModel] = useState("gpt-5.6")
+  const [notebookPath, setNotebookPath] = useState("")
+  const [notebookTask, setNotebookTask] = useState("Open the Jupyter Notebook, run every cell, fix failures, and summarize the result for the recruiter workflow.")
+  const [runOutput, setRunOutput] = useState("")
+  const [isRunningNotebook, setIsRunningNotebook] = useState(false)
 
-  const handleCopyCommand = useCallback((command: string, label: string) => {
-    void navigator.clipboard.writeText(command)
-    toast.success(`${label} copied`)
+  const checkCodexStatus = useCallback(async () => {
+    try {
+      const response = await fetch(`${codexBridgeBaseUrl}/codex/status`)
+      if (!response.ok) throw new Error("Codex bridge status check failed")
+      const result = await response.json() as { connected?: boolean; output?: string }
+      setConnectionStatus(result.connected ? "connected" : "disconnected")
+      if (result.output) setRunOutput(result.output)
+    } catch {
+      setConnectionStatus("bridge-missing")
+    }
   }, [])
 
-  const handleConnectCodex = useCallback(() => {
-    setTestState({ status: "success" })
-    void navigator.clipboard.writeText(codexLoginCommand)
-    toast.success("Codex ChatGPT sign-in command copied")
-  }, [])
+  useEffect(() => {
+    if (!dialogOpen) return
+    void checkCodexStatus()
+  }, [checkCodexStatus, dialogOpen])
+
+  const handleConnectCodex = useCallback(async () => {
+    setConnectionStatus("connecting")
+    try {
+      const response = await fetch(`${codexBridgeBaseUrl}/codex/connect`, { method: "POST" })
+      if (!response.ok) throw new Error("Codex bridge connect failed")
+      toast.success("Opening ChatGPT sign-in for Codex")
+      window.setTimeout(() => void checkCodexStatus(), 3500)
+    } catch {
+      setConnectionStatus("bridge-missing")
+      window.open("https://chatgpt.com", "_blank", "noopener,noreferrer")
+      toast.error("Start the Jobraker Codex bridge to connect from the web app")
+    }
+  }, [checkCodexStatus])
+
+  const handleRunNotebook = useCallback(async () => {
+    setIsRunningNotebook(true)
+    setRunOutput("")
+    try {
+      const response = await fetch(`${codexBridgeBaseUrl}/codex/run-notebook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: selectedModel,
+          notebookPath: notebookPath.trim(),
+          task: notebookTask.trim(),
+        }),
+      })
+
+      const result = await response.json() as { ok?: boolean; output?: string; error?: string }
+      if (!response.ok || !result.ok) throw new Error(result.error || "Codex notebook run failed")
+      setConnectionStatus("connected")
+      setRunOutput(result.output || "Codex finished the notebook task.")
+      toast.success("Codex finished the notebook run")
+    } catch (error) {
+      setConnectionStatus("bridge-missing")
+      setRunOutput(error instanceof Error ? error.message : "The Codex bridge is required to run notebooks.")
+      toast.error("Codex bridge is required to run notebooks")
+    } finally {
+      setIsRunningNotebook(false)
+    }
+  }, [notebookPath, notebookTask, selectedModel])
+
+  const connectionCopy = {
+    checking: "Checking local bridge",
+    disconnected: "Ready to connect",
+    connecting: "Opening ChatGPT sign-in",
+    connected: "Connected to Codex",
+    "bridge-missing": "Local bridge needed",
+    error: "Connection error",
+  }[connectionStatus]
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-primary/45 bg-primary/5 p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
-            <Terminal className="size-5" />
-          </div>
-          <div className="min-w-0 flex-1 space-y-2">
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Codex CLI</span>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Connect Codex with ChatGPT Plus</h3>
+    <div className="space-y-5">
+      <div className="overflow-hidden rounded-3xl border border-primary/40 bg-[radial-gradient(circle_at_top_left,rgba(35,255,35,0.18),transparent_34%),linear-gradient(135deg,rgba(6,18,9,0.96),rgba(0,0,0,0.98))] p-5 text-white shadow-[0_18px_55px_rgba(35,255,35,0.08)]">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+              <Terminal className="size-3.5" />
+              Codex Connect
             </div>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              Install Codex locally, sign in with ChatGPT in the browser, and use your ChatGPT plan access for coding tasks in this workspace.
-            </p>
+            <div>
+              <h3 className="text-2xl font-semibold tracking-tight">Connect with ChatGPT, run with Codex CLI</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
+                Jobraker uses your local Codex CLI session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and delegate notebook work without placing Codex credentials in the browser.
+              </p>
+            </div>
+          </div>
+          <div className={cn(
+            "inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
+            connectionStatus === "connected"
+              ? "border-primary/45 bg-primary/15 text-primary"
+              : connectionStatus === "bridge-missing"
+                ? "border-amber-400/45 bg-amber-400/10 text-amber-200"
+                : "border-white/15 bg-white/8 text-white/70"
+          )}>
+            {connectionStatus === "connected" ? <CheckCircle2 className="size-3.5" /> : connectionStatus === "connecting" || connectionStatus === "checking" ? <Loader2 className="size-3.5 animate-spin" /> : <AlertTriangle className="size-3.5" />}
+            {connectionCopy}
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-primary/20 bg-background/70 p-4 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">Use ChatGPT sign-in for Plus plan usage.</span>{" "}
-          API-key login is for usage-based OpenAI Platform billing and can limit ChatGPT workspace/cloud features.
+        <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Codex model</label>
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger className="border-white/15 bg-black/45 text-white">
+                <SelectValue placeholder="Choose a model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gpt-5.6">GPT-5.6</SelectItem>
+                <SelectItem value="gpt-5.6-sol">GPT-5.6 Sol</SelectItem>
+                <SelectItem value="gpt-5.4">GPT-5.4</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => window.open("https://chatgpt.com", "_blank", "noopener,noreferrer")}
-            className="mt-3 w-full sm:w-auto"
+            onClick={handleConnectCodex}
+            disabled={connectionStatus === "connecting"}
+            className="h-10 bg-primary text-black hover:bg-primary/90"
           >
-            Open ChatGPT
+            {connectionStatus === "connecting" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Link2 className="mr-2 size-4" />}
+            Connect Codex
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h4 className="text-sm font-semibold">Run a Jupyter Notebook with Codex</h4>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              The bridge runs `codex exec` locally, using the signed-in ChatGPT/Codex CLI session and the model selected above.
+            </p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={checkCodexStatus}>
+            <RefreshCw className="mr-2 size-3.5" />
+            Check status
           </Button>
         </div>
 
-        <div className="mt-5 grid gap-3">
-          <div className="rounded-xl border border-border bg-background/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium">1. Install Codex CLI</div>
-                <div className="text-xs text-muted-foreground">Run once on this machine.</div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCopyCommand(codexInstallCommand, "Install command")}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
-            </div>
-            <code className="block overflow-x-auto rounded-lg bg-black px-3 py-2 font-mono text-sm text-primary">
-              {codexInstallCommand}
-            </code>
+        <div className="mt-4 grid gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Notebook path</label>
+            <Input
+              value={notebookPath}
+              onChange={(event) => setNotebookPath(event.target.value)}
+              placeholder="C:\Users\MILES\Documents\analysis\recruiter-workflow.ipynb"
+            />
           </div>
-
-          <div className="rounded-xl border border-border bg-background/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium">2. Sign in with ChatGPT</div>
-                <div className="text-xs text-muted-foreground">This opens the browser so you can choose your ChatGPT workspace.</div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCopyCommand(codexLoginCommand, "ChatGPT sign-in command")}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
-            </div>
-            <code className="block overflow-x-auto rounded-lg bg-black px-3 py-2 font-mono text-sm text-primary">
-              {codexLoginCommand}
-            </code>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Notebook task</label>
+            <textarea
+              value={notebookTask}
+              onChange={(event) => setNotebookTask(event.target.value)}
+              className="min-h-24 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            />
           </div>
-
-          <div className="rounded-xl border border-border bg-background/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium">3. Verify the active auth method</div>
-                <div className="text-xs text-muted-foreground">Confirm Codex is signed in before running workspace tasks.</div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCopyCommand(codexStatusCommand, "Status command")}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
-            </div>
-            <code className="block overflow-x-auto rounded-lg bg-black px-3 py-2 font-mono text-sm text-primary">
-              {codexStatusCommand}
-            </code>
-          </div>
-
-          <div className="rounded-xl border border-border bg-background/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium">4. Start Codex with a GPT-5.6 model</div>
-                <div className="text-xs text-muted-foreground">Use the model flag when you want Codex CLI to run with a specific available GPT model.</div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCopyCommand(codexModelCommand, "Model command")}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
-            </div>
-            <code className="block overflow-x-auto rounded-lg bg-black px-3 py-2 font-mono text-sm text-primary">
-              {codexModelCommand}
-            </code>
-          </div>
-
-          <div className="rounded-xl border border-border bg-background/80 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium">5. Run an app task with Codex CLI</div>
-                <div className="text-xs text-muted-foreground">
-                  This is the command shape a local bridge would run when the web app delegates a coding task.
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCopyCommand(codexTaskCommand, "Task command")}
-                className="shrink-0"
-              >
-                Copy
-              </Button>
-            </div>
-            <code className="block overflow-x-auto rounded-lg bg-black px-3 py-2 font-mono text-sm text-primary">
-              {codexTaskCommand}
-            </code>
-          </div>
+          <Button
+            type="button"
+            onClick={handleRunNotebook}
+            disabled={isRunningNotebook || !notebookTask.trim()}
+            className="w-full bg-primary text-black hover:bg-primary/90"
+          >
+            {isRunningNotebook ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Terminal className="mr-2 size-4" />}
+            Run Jupyter Notebook with Codex
+          </Button>
         </div>
 
-        {testState.status === "success" && (
-          <div className="mt-4 flex items-center gap-1.5 text-sm text-green-600">
-            <CheckCircle2 className="size-4" />
-            Run the copied command to complete ChatGPT sign-in in your browser.
-          </div>
+        {runOutput && (
+          <pre className="mt-4 max-h-52 overflow-auto rounded-xl border border-border bg-black p-3 text-xs leading-5 text-primary">
+            {runOutput}
+          </pre>
         )}
       </div>
 
-      <Button
-        type="button"
-        onClick={handleConnectCodex}
-        className="w-full"
-      >
-        Copy ChatGPT sign-in command
-      </Button>
+      <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200">
+        The browser never receives Codex tokens or AWS keys. Start the local bridge on your machine when you want the hosted app to trigger Codex CLI actions.
+      </div>
     </div>
   )
 }
@@ -1421,7 +1434,7 @@ export function SettingsDialog({ children, defaultTab = "account", open: control
     })
   }, [open])
 
-  const visibleTabs = useMemo(() => jobrakerRecruiterConnected ? tabs.filter(t => t.id !== "models") : tabs, [jobrakerRecruiterConnected])
+  const visibleTabs = useMemo(() => tabs, [])
 
   const activeTabConfig = visibleTabs.find((t) => t.id === activeTab) ?? visibleTabs[0]
   const isJsonTab = activeTab === "mcp" || activeTab === "security"
