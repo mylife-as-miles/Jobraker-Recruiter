@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
           claude: { installed: false, signedIn: false },
           codex: { installed: false, signedIn: false },
           webFallback: true,
-          reason: 'Hosted web apps cannot inspect or execute a local Codex CLI without a trusted local bridge.',
+          reason: 'Hosted web apps cannot inspect or execute a local Codex App Server without the trusted local gateway.',
         })
       case 'meeting:checkScreenPermission':
         return json({ granted: false })
