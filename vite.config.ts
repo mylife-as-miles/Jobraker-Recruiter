@@ -1,7 +1,48 @@
 import path from "path"
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+
+const settingsDialogPath = path
+  .resolve(__dirname, "./src/components/settings-dialog.tsx")
+  .replaceAll("\\", "/")
+const codexSettingsImport = 'import { CodexAppServerSettings } from "@/components/settings/codex-app-server-settings"'
+
+function codexAppServerSettings(): Plugin {
+  return {
+    name: 'jobraker-codex-app-server-settings',
+    enforce: 'pre',
+    transform(code, id) {
+      const cleanId = id.split('?')[0].replaceAll("\\", "/")
+      if (cleanId !== settingsDialogPath) return null
+
+      const importAnchor = 'import { ConnectorApiKeysSettings } from "@/components/settings/connector-api-keys-settings"'
+      const startMarker = '// --- Codex Settings UI ---'
+      const endMarker = '// --- Tools Library Settings ---'
+
+      let transformed = code
+      if (!transformed.includes(codexSettingsImport)) {
+        if (!transformed.includes(importAnchor)) {
+          throw new Error('Could not locate the Jobraker settings import anchor')
+        }
+        transformed = transformed.replace(importAnchor, `${importAnchor}\n${codexSettingsImport}`)
+      }
+
+      const start = transformed.indexOf(startMarker)
+      const end = transformed.indexOf(endMarker)
+      if (start < 0 || end < 0 || end <= start) {
+        throw new Error('Could not locate the legacy Codex settings section')
+      }
+
+      const replacement = `${startMarker}\n\nfunction ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {\n  return <CodexAppServerSettings dialogOpen={dialogOpen} />\n}\n\n`
+
+      return {
+        code: `${transformed.slice(0, start)}${replacement}${transformed.slice(end)}`,
+        map: null,
+      }
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,6 +51,7 @@ export default defineConfig({
     strictPort: false,
   },
   plugins: [
+    codexAppServerSettings(),
     react(),
     tailwindcss(),
   ],
