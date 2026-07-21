@@ -248,7 +248,6 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
   const codexSessionRef = React.useRef<WebSocket | null>(null)
   const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "thinking" | "executing" | "bridge-missing" | "codex-unavailable" | "error">("checking")
   const [selectedModel, setSelectedModel] = useState("gpt-5.6")
-  const [workspacePath, setWorkspacePath] = useState("")
   const [codexTask, setCodexTask] = useState("Review this Jobraker Recruiter workspace, carry out the requested recruiter workflow task, fix failures safely, and summarize the result.")
   const [runOutput, setRunOutput] = useState("")
   const [isRunningCodexTask, setIsRunningCodexTask] = useState(false)
@@ -310,7 +309,6 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
             "Run recruiter workflow and workspace tasks with the smallest safe changes.",
           ].join("\n"),
           tools: [],
-          workspacePath: workspacePath.trim(),
           userMessage: codexTask.trim(),
         }))
       }
@@ -383,7 +381,7 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
       setRunOutput(error instanceof Error ? error.message : "The Codex app-server bridge is required to run workspace tasks.")
       toast.error("Codex bridge is required to run workspace tasks")
     }
-  }, [codexBridgeWsUrl, codexTask, codexThreadId, selectedModel, workspacePath])
+  }, [codexBridgeWsUrl, codexTask, codexThreadId, selectedModel])
 
   const handleAbortCodexTask = useCallback(() => {
     if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
@@ -486,14 +484,6 @@ function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
         </div>
 
         <div className="mt-4 grid gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Workspace path</label>
-            <Input
-              value={workspacePath}
-              onChange={(event) => setWorkspacePath(event.target.value)}
-              placeholder="C:\Users\MILES\Documents\Jobraker-Recruiter"
-            />
-          </div>
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Recruiter task</label>
             <textarea

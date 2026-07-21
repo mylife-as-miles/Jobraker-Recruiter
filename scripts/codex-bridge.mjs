@@ -98,14 +98,10 @@ function openCodexLogin() {
   child.unref()
 }
 
-function buildWorkspaceTaskPrompt({ workspacePath, task }) {
-  const target = workspacePath
-    ? `Target workspace path: ${workspacePath}`
-    : "Target workspace path: use the current Jobraker Recruiter workspace unless the task says otherwise."
-
+function buildWorkspaceTaskPrompt({ task }) {
   return [
     "You are running inside Jobraker Recruiter as a local Codex app-server task.",
-    target,
+    `Target workspace: use the current bridge working directory (${process.cwd()}).`,
     "Goal: complete the recruiter workflow task with local tools, inspect failures, apply the smallest safe fix, and report the verification result.",
     `User task: ${task || "Inspect the Jobraker Recruiter workspace, complete the requested task, and verify the result."}`,
     "Preserve unrelated files. Summarize commands, edits, verification, and remaining blockers.",
@@ -474,7 +470,6 @@ function handleCodexWebSocket(request, socket) {
             threadId: typeof message.threadId === "string" ? message.threadId : undefined,
             tools: Array.isArray(message.tools) ? message.tools : [],
             userMessage: buildWorkspaceTaskPrompt({
-              workspacePath: typeof message.workspacePath === "string" ? message.workspacePath.trim() : "",
               task: typeof message.userMessage === "string" ? message.userMessage.trim() : "",
             }),
           })
