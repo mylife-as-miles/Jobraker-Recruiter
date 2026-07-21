@@ -2,14 +2,32 @@ import { createClient } from '@supabase/supabase-js'
 
 export const createRequestClient = (req: Request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  const supabaseAnonKey =
+    Deno.env.get('SUPABASE_PUBLISHABLE_KEY') ??
+    Deno.env.get('SUPABASE_ANON_KEY')
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY.')
+    throw new Error('Missing SUPABASE_URL or a Supabase publishable key.')
   }
 
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+export const createAdminClient = () => {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const secretKey =
+    Deno.env.get('SUPABASE_SECRET_KEY') ??
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  if (!supabaseUrl || !secretKey) {
+    throw new Error('Missing SUPABASE_URL or a Supabase server secret key.')
+  }
+
+  return createClient(supabaseUrl, secretKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
   })
 }
 
