@@ -1151,7 +1151,7 @@ function App() {
     voice.start()
   }, [voice])
 
-  const handlePromptSubmitRef = useRef<((message: PromptInputMessage, mentions?: FileMention[], stagedAttachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude' | 'codex') => Promise<void>) | null>(null)
+  const handlePromptSubmitRef = useRef<((message: PromptInputMessage, mentions?: FileMention[], stagedAttachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude') => Promise<void>) | null>(null)
   const pendingVoiceInputRef = useRef(false)
 
   // Palette: per-tab editor handles for capturing cursor context on Cmd+K, and pending payload
@@ -2396,10 +2396,10 @@ function App() {
             if (llmEvent.toolName === 'executeCommand') {
               const input = llmEvent.input as { command?: unknown } | undefined
               const cmd = typeof input?.command === 'string' ? input.command : ''
-              const match = cmd.match(/\bacpx\b[\s\S]*?\b(claude|codex)\b/)
+              const match = cmd.match(/\bacpx\b[\s\S]*?(claude)/)
               if (match) {
                 window.dispatchEvent(new CustomEvent('code-mode-detected', {
-                  detail: { runId: event.runId, agent: match[1] as 'claude' | 'codex' },
+                  detail: { runId: event.runId, agent: match[1] as 'claude' },
                 }))
               }
             }
@@ -2695,7 +2695,7 @@ function App() {
     mentions?: FileMention[],
     stagedAttachments: StagedAttachment[] = [],
     searchEnabled?: boolean,
-    codeMode?: 'claude' | 'codex',
+    codeMode?: 'claude',
   ) => {
     if (isProcessing) return
 
@@ -6268,7 +6268,7 @@ function App() {
                                                 try {
                                                   await window.ipc.invoke('runs:createMessage', {
                                                     runId: runIdForSwitch,
-                                                    message: `Use ${newAgent === 'claude' ? 'Claude Code' : 'Codex'} instead — rerun the same task with the same prompt, just swap the agent binary to \`${newAgent}\`.`,
+                                                    message: `Use ${'Claude Code'} instead — rerun the same task with the same prompt, just swap the agent binary to \`${newAgent}\`.`,
                                                     codeMode: newAgent,
                                                   })
                                                 } catch (err) {
