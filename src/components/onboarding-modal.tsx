@@ -42,7 +42,7 @@ type Step = 0 | 1 | 2 | 3 | 4
 
 type OnboardingPath = 'jobraker-recruiter' | 'byok' | null
 
-type LlmProviderFlavor = "openai" | "anthropic" | "google" | "openrouter" | "aigateway" | "ollama" | "openai-compatible"
+type LlmProviderFlavor = "anthropic" | "google" | "openrouter" | "aigateway" | "ollama"
 
 interface LlmModelOption {
   id: string
@@ -55,18 +55,16 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   const [onboardingPath, setOnboardingPath] = useState<OnboardingPath>(null)
 
   // LLM setup state
-  const [llmProvider, setLlmProvider] = useState<LlmProviderFlavor>("openai")
+  const [llmProvider, setLlmProvider] = useState<LlmProviderFlavor>("google")
   const [modelsCatalog, setModelsCatalog] = useState<Record<string, LlmModelOption[]>>({})
   const [modelsLoading, setModelsLoading] = useState(false)
   const [modelsError, setModelsError] = useState<string | null>(null)
   const [providerConfigs, setProviderConfigs] = useState<Record<LlmProviderFlavor, { apiKey: string; baseURL: string; model: string; knowledgeGraphModel: string; meetingNotesModel: string; liveNoteAgentModel: string }>>({
-    openai: { apiKey: "", baseURL: "", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
     anthropic: { apiKey: "", baseURL: "", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
     google: { apiKey: "", baseURL: "", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
     openrouter: { apiKey: "", baseURL: "", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
     aigateway: { apiKey: "", baseURL: "", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
     ollama: { apiKey: "", baseURL: "http://localhost:11434", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
-    "openai-compatible": { apiKey: "", baseURL: "http://localhost:1234/v1", model: "", knowledgeGraphModel: "", meetingNotesModel: "", liveNoteAgentModel: "" },
   })
   const [testState, setTestState] = useState<{ status: "idle" | "testing" | "success" | "error"; error?: string }>({
     status: "idle",
@@ -129,11 +127,11 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   )
 
   const activeConfig = providerConfigs[llmProvider]
-  const showApiKey = llmProvider === "openai" || llmProvider === "anthropic" || llmProvider === "google" || llmProvider === "openrouter" || llmProvider === "aigateway" || llmProvider === "openai-compatible"
-  const requiresApiKey = llmProvider === "openai" || llmProvider === "anthropic" || llmProvider === "google" || llmProvider === "openrouter" || llmProvider === "aigateway"
-  const requiresBaseURL = llmProvider === "ollama" || llmProvider === "openai-compatible"
-  const showBaseURL = llmProvider === "ollama" || llmProvider === "openai-compatible" || llmProvider === "aigateway"
-  const isLocalProvider = llmProvider === "ollama" || llmProvider === "openai-compatible"
+  const showApiKey = llmProvider === "anthropic" || llmProvider === "google" || llmProvider === "openrouter" || llmProvider === "aigateway"
+  const requiresApiKey = llmProvider === "anthropic" || llmProvider === "google" || llmProvider === "openrouter" || llmProvider === "aigateway"
+  const requiresBaseURL = llmProvider === "ollama"
+  const showBaseURL = llmProvider === "ollama" || llmProvider === "aigateway"
+  const isLocalProvider = llmProvider === "ollama"
   const canTest =
     activeConfig.model.trim().length > 0 &&
     (!requiresApiKey || activeConfig.apiKey.trim().length > 0) &&
@@ -192,7 +190,6 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
   // Preferred default models for each provider
   const preferredDefaults: Partial<Record<LlmProviderFlavor, string>> = {
-  openai: "gpt-5.2",
   anthropic: "claude-opus-4-6-20260202",
 }
 
@@ -201,7 +198,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     if (Object.keys(modelsCatalog).length === 0) return
     setProviderConfigs(prev => {
       const next = { ...prev }
-      const cloudProviders: LlmProviderFlavor[] = ["openai", "anthropic", "google"]
+      const cloudProviders: LlmProviderFlavor[] = ["anthropic", "google"]
       for (const provider of cloudProviders) {
         const models = modelsCatalog[provider]
         if (models?.length && !next[provider].model) {
@@ -1275,7 +1272,6 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   // Step 2 (BYOK path): LLM Setup
   const renderLlmSetupStep = () => {
     const primaryProviders: Array<{ id: LlmProviderFlavor; name: string; description: string }> = [
-      { id: "openai", name: "OpenAI", description: "Use your OpenAI API key" },
       { id: "anthropic", name: "Anthropic", description: "Use your Anthropic API key" },
       { id: "google", name: "Gemini", description: "Use your Google AI Studio key" },
       { id: "ollama", name: "Ollama (Local)", description: "Run a local model via Ollama" },
@@ -1284,7 +1280,6 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     const moreProviders: Array<{ id: LlmProviderFlavor; name: string; description: string }> = [
       { id: "openrouter", name: "OpenRouter", description: "Access multiple models with one key" },
       { id: "aigateway", name: "AI Gateway (Vercel)", description: "Use Vercel's AI Gateway" },
-      { id: "openai-compatible", name: "OpenAI-Compatible", description: "Local or hosted OpenAI-compatible API" },
     ]
 
     const isMoreProvider = moreProviders.some(p => p.id === llmProvider)
@@ -1479,7 +1474,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
           {showApiKey && (
             <div className="space-y-2">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {llmProvider === "openai-compatible" ? "API Key (optional)" : "API Key"}
+                {false ? "API Key (optional)" : "API Key"}
               </span>
               <Input
                 type="password"
@@ -1499,7 +1494,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
                 placeholder={
                   llmProvider === "ollama"
                     ? "http://localhost:11434"
-                    : llmProvider === "openai-compatible"
+                    : false
                       ? "http://localhost:1234/v1"
                       : "https://ai-gateway.vercel.sh/v1"
                 }

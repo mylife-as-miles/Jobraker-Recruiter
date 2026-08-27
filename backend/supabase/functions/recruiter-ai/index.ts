@@ -1,5 +1,8 @@
+import { GoogleGenAI } from "npm:@google/genai";
 import { handleOptions, json, readPayload } from '../_shared/http.ts'
 import { requireWorkspace } from '../_shared/supabase.ts'
+
+const DEFAULT_MODEL = 'gemini-3.5-flash'
 
 Deno.serve(async (req) => {
   const early = handleOptions(req)
@@ -13,25 +16,41 @@ Deno.serve(async (req) => {
       return json({ error: `Unsupported recruiter AI channel: ${channel}` }, 400)
     }
 
-    const apiKey = Deno.env.get('OPENAI_API_KEY')
+    const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) {
-      return json({ text: '', error: 'OPENAI_API_KEY is not configured for the recruiter-ai Edge Function.' })
+      return json({
+        text: '',
+        error: 'GEMINI_API_KEY is not configured for the recruiter-ai Edge Function.',
+      }, 500)
     }
 
-    const prompt = `${String(args.systemPrompt ?? '')}\n\n${String(args.prompt ?? '')}`.trim()
-    const completion = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: Deno.env.get('OPENAI_MODEL') ?? 'gpt-4.1-mini',
-        input: prompt,
-        temperature: Number(args.temperature ?? 0.4),
-      }),
+    const model = Deno.env.get('GEMINI_MODEL') || DEFAULT_MODEL
+    const systemPrompt = String(args.systemPrompt ?? '').trim()
+    const prompt = String(args.prompt ?? '').trim()
+    const temperature = Number(args.temperature ?? 0.4)
+
+    const ai = new GoogleGenAI({ apiKey })
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        temperature: Number.isFinite(temperature) ? temperature : 0.4,
+        ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
+      },
     })
-    const data = await completion.json()
-    const text = data.output_text ?? data.output?.flatMap((item: Record<string, unknown>) => item.content ?? []).map((item: Record<string, unknown>) => item.text ?? '').join('') ?? ''
-    return json({ text, error: completion.ok ? undefined : data.error?.message ?? 'LLM request failed' })
+
+    const text = response.text ?? ''
+    return json({
+      text,
+      model,
+      provider: 'google',
+      sdk: '@google/genai',
+    })
   } catch (error) {
-    return json({ error: error instanceof Error ? error.message : String(error) }, error instanceof Error && error.message === 'Authentication required' ? 401 : 500)
+    console.error('recruiter-ai Gemini error', error)
+    return json(
+      { error: error instanceof Error ? error.message : String(error) },
+      error instanceof Error && error.message === 'Authentication required' ? 401 : 500,
+    )
   }
 })

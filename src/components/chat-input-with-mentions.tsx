@@ -63,17 +63,15 @@ const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024 // 10MB
 
 
 const providerDisplayNames: Record<string, string> = {
-  openai: 'OpenAI',
   anthropic: 'Anthropic',
   google: 'Gemini',
   ollama: 'Ollama',
   openrouter: 'OpenRouter',
   aigateway: 'AI Gateway',
-  'openai-compatible': 'OpenAI-Compatible',
   'jobraker-recruiter': 'Jobraker Recruiter',
 }
 
-type ProviderName = "openai" | "anthropic" | "google" | "openrouter" | "aigateway" | "ollama" | "openai-compatible" | "jobraker-recruiter"
+type ProviderName = "anthropic" | "google" | "openrouter" | "aigateway" | "ollama" | "jobraker-recruiter"
 
 interface ConfiguredModel {
   provider: ProviderName
@@ -109,7 +107,7 @@ function getAttachmentIcon(kind: AttachmentIconKind) {
 }
 
 interface ChatInputInnerProps {
-  onSubmit: (message: PromptInputMessage, mentions?: FileMention[], attachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude' | 'codex') => void
+  onSubmit: (message: PromptInputMessage, mentions?: FileMention[], attachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude') => void
   onStop?: () => void
   isProcessing: boolean
   isStopping?: boolean
@@ -179,7 +177,7 @@ function ChatInputInner({
   const [searchEnabled, setSearchEnabled] = useState(false)
   const [searchAvailable, setSearchAvailable] = useState(false)
   const [isJobrakerRecruiterConnected, setIsJobrakerRecruiterConnected] = useState(false)
-  const [codingAgent, setCodingAgent] = useState<'claude' | 'codex'>('claude')
+  const [codingAgent, setCodingAgent] = useState<'claude'>('claude')
   const [codeModeEnabled, setCodeModeEnabled] = useState(false)
   const [codeModeFeatureEnabled, setCodeModeFeatureEnabled] = useState(false)
 
@@ -288,7 +286,7 @@ function ChatInputInner({
   // flip the pill on with the detected agent so the UI reflects what's happening.
   useEffect(() => {
     const handler = (ev: Event) => {
-      const detail = (ev as CustomEvent<{ runId?: string; agent?: 'claude' | 'codex' }>).detail
+      const detail = (ev as CustomEvent<{ runId?: string; agent?: 'claude' }>).detail
       if (!detail || !detail.agent) return
       if (runId && detail.runId && detail.runId !== runId) return
       setCodeModeEnabled(true)
@@ -306,27 +304,27 @@ function ChatInputInner({
   }, [])
 
   // Load coding-agent preference for a given workdir.
-  // Storage: config/coding-agents.json — { [workDirPath]: 'claude' | 'codex' }
-  const loadCodingAgentFor = useCallback(async (dir: string | null): Promise<'claude' | 'codex'> => {
+  // Storage: config/coding-agents.json — { [workDirPath]: 'claude' }
+  const loadCodingAgentFor = useCallback(async (dir: string | null): Promise<'claude'> => {
     if (!dir) return 'claude'
     try {
       const result = await window.ipc.invoke('workspace:readFile', { path: 'config/coding-agents.json' })
       const parsed = JSON.parse(result.data) as Record<string, unknown>
       const value = parsed?.[dir]
-      if (value === 'codex' || value === 'claude') return value
+      if (value === 'claude') return value
     } catch {
       /* file missing or invalid — fall through to default */
     }
     return 'claude'
   }, [])
 
-  const persistCodingAgent = useCallback(async (dir: string, agent: 'claude' | 'codex') => {
-    let existing: Record<string, 'claude' | 'codex'> = {}
+  const persistCodingAgent = useCallback(async (dir: string, agent: 'claude') => {
+    let existing: Record<string, 'claude'> = {}
     try {
       const result = await window.ipc.invoke('workspace:readFile', { path: 'config/coding-agents.json' })
       const parsed = JSON.parse(result.data) as Record<string, unknown>
       for (const [k, v] of Object.entries(parsed ?? {})) {
-        if (v === 'claude' || v === 'codex') existing[k] = v
+        if (v === 'claude') existing[k] = v
       }
     } catch { /* start fresh */ }
     existing[dir] = agent
@@ -381,21 +379,7 @@ function ChatInputInner({
     toast.success('Work directory cleared')
   }, [onWorkDirChange])
 
-  const handleToggleCodingAgent = useCallback(async () => {
-    const next: 'claude' | 'codex' = codingAgent === 'claude' ? 'codex' : 'claude'
-    setCodingAgent(next)
-    // Persist only when scoped to a workdir; without one there's nothing to key on.
-    if (!workDir) return
-    try {
-      await persistCodingAgent(workDir, next)
-    } catch (err) {
-      console.error('Failed to save coding agent', err)
-      toast.error('Failed to save coding agent')
-      // revert on failure
-      setCodingAgent(codingAgent)
-    }
-  }, [workDir, codingAgent, persistCodingAgent])
-
+  
   // Check search tool availability (Firecrawl API key in config/firecrawl.json)
   useEffect(() => {
     const checkSearch = async () => {
@@ -727,14 +711,14 @@ function ChatInputInner({
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  onClick={handleToggleCodingAgent}
+                  disabled
                   className="flex h-full items-center rounded-r-full pl-2 pr-2.5 transition-colors hover:bg-secondary/70"
                 >
-                  <span>{codingAgent === 'claude' ? 'Claude' : 'Codex'}</span>
+                  <span>Claude</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent side="top">
-                Coding agent: {codingAgent === 'claude' ? 'Claude Code' : 'Codex'} — click to swap
+                Coding agent: Claude Code
               </TooltipContent>
             </Tooltip>
           </div>
@@ -750,7 +734,7 @@ function ChatInputInner({
                 <Terminal className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top">Use a coding agent (Claude Code or Codex)</TooltipContent>
+            <TooltipContent side="top">Use Claude Code</TooltipContent>
           </Tooltip>
         ))}
         <div className="flex-1" />
@@ -913,7 +897,7 @@ export interface ChatInputWithMentionsProps {
   knowledgeFiles: string[]
   recentFiles: string[]
   visibleFiles: string[]
-  onSubmit: (message: PromptInputMessage, mentions?: FileMention[], attachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude' | 'codex') => void
+  onSubmit: (message: PromptInputMessage, mentions?: FileMention[], attachments?: StagedAttachment[], searchEnabled?: boolean, codeMode?: 'claude') => void
   onStop?: () => void
   isProcessing: boolean
   isStopping?: boolean

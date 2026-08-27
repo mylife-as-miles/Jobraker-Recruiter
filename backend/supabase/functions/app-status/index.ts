@@ -37,9 +37,8 @@ Deno.serve(async (req) => {
       case 'codeMode:checkAgentStatus':
         return json({
           claude: { installed: false, signedIn: false },
-          codex: { installed: false, signedIn: false },
           webFallback: true,
-          reason: 'Hosted Codex runs are managed through Supabase and the private Codex worker, not a browser-local CLI.',
+          reason: 'Browser deployment does not expose local coding-agent binaries. Recruiter AI runs through the Gemini Edge Function.',
         })
       case 'meeting:checkScreenPermission':
         return json({ granted: false })

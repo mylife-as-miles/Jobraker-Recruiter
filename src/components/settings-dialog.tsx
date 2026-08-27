@@ -27,7 +27,7 @@ import { useTheme } from "@/contexts/theme-context"
 import { toast } from "sonner"
 import { AccountSettings } from "@/components/settings/account-settings"
 import { ConnectedAccountsSettings } from "@/components/settings/connected-accounts-settings"
-import { ConnectorApiKeysSettings } from "@/components/settings/connector-api-keys-settings"
+import { ConnectorApiKeysSettings } from "@/components/settings/connector-api-keys-settings"\nimport { GeminiSettings } from "@/components/settings/gemini-settings"
 
 type ConfigTab = "account" | "connections" | "models" | "mcp" | "security" | "code-mode" | "appearance" | "note-tagging" | "help"
 
@@ -54,9 +54,9 @@ const tabs: TabConfig[] = [
   },
   {
     id: "models",
-    label: "Codex",
+    label: "Gemini",
     icon: Terminal,
-    description: "Connect Codex to this workspace",
+    description: "Gemini 3.5+ via Google GenAI SDK",
   },
   {
     id: "mcp",
@@ -76,7 +76,7 @@ const tabs: TabConfig[] = [
     id: "code-mode",
     label: "Code Mode",
     icon: Terminal,
-    description: "Delegate coding tasks to Claude Code or Codex",
+    description: "Delegate coding tasks to configured workspace tools",
   },
   {
     id: "appearance",
@@ -240,293 +240,10 @@ function AppearanceSettings() {
   )
 }
 
-// --- Codex Settings UI ---
+// --- Gemini Settings UI ---
 
 function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
-  const codexBridgeBaseUrl = "http://127.0.0.1:17373"
-  const codexBridgeWsUrl = "ws://127.0.0.1:17373/ws/codex"
-  const codexSessionRef = React.useRef<WebSocket | null>(null)
-  const [connectionStatus, setConnectionStatus] = useState<"checking" | "disconnected" | "connecting" | "connected" | "thinking" | "executing" | "bridge-missing" | "codex-unavailable" | "error">("checking")
-  const [selectedModel, setSelectedModel] = useState("gpt-5.6")
-  const [codexTask, setCodexTask] = useState("Review this Jobraker Recruiter workspace, carry out the requested recruiter workflow task, fix failures safely, and summarize the result.")
-  const [runOutput, setRunOutput] = useState("")
-  const [isRunningCodexTask, setIsRunningCodexTask] = useState(false)
-  const [codexThreadId, setCodexThreadId] = useState<string | null>(null)
-
-  const checkCodexStatus = useCallback(async () => {
-    try {
-      const response = await fetch(`${codexBridgeBaseUrl}/codex/status`)
-      if (!response.ok) throw new Error("Codex bridge status check failed")
-      const result = await response.json() as { available?: boolean; connected?: boolean; output?: string; version?: string }
-      setConnectionStatus(result.available === false ? "codex-unavailable" : result.connected ? "connected" : "disconnected")
-      if (result.output || result.version) setRunOutput([result.version, result.output].filter(Boolean).join("\n"))
-    } catch {
-      setConnectionStatus("bridge-missing")
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!dialogOpen) return
-    void checkCodexStatus()
-  }, [checkCodexStatus, dialogOpen])
-
-  const handleConnectCodex = useCallback(async () => {
-    setConnectionStatus("connecting")
-    try {
-      const response = await fetch(`${codexBridgeBaseUrl}/codex/connect`, { method: "POST" })
-      if (!response.ok) throw new Error("Codex bridge connect failed")
-      toast.success("Opening ChatGPT sign-in for Codex")
-      window.setTimeout(() => void checkCodexStatus(), 3500)
-    } catch {
-      setConnectionStatus("bridge-missing")
-      window.open("https://chatgpt.com", "_blank", "noopener,noreferrer")
-      toast.error("Start the Jobraker Codex bridge to connect from the web app")
-    }
-  }, [checkCodexStatus])
-
-  const handleRunCodexTask = useCallback(async () => {
-    if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
-      codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
-      codexSessionRef.current.close()
-    }
-
-    setIsRunningCodexTask(true)
-    setRunOutput("")
-    setConnectionStatus("connecting")
-
-    try {
-      const socket = new WebSocket(codexBridgeWsUrl)
-      codexSessionRef.current = socket
-
-      socket.onopen = () => {
-        socket.send(JSON.stringify({
-          type: "start",
-          model: selectedModel,
-          threadId: codexThreadId || undefined,
-          systemPrompt: [
-            "You are Jobraker Recruiter's Codex operator.",
-            "Use local tools carefully, preserve unrelated files, and report verification honestly.",
-            "Run recruiter workflow and workspace tasks with the smallest safe changes.",
-          ].join("\n"),
-          tools: [],
-          userMessage: codexTask.trim(),
-        }))
-      }
-
-      socket.onmessage = (event) => {
-        const message = JSON.parse(event.data) as {
-          type: "thread" | "status" | "delta" | "turn_complete" | "error" | "tool_call" | "tool_status"
-          status?: "connecting" | "thinking" | "executing" | "aborted"
-          text?: string
-          threadId?: string
-          message?: string
-          fatal?: boolean
-          name?: string
-        }
-
-        if (message.type === "thread" && message.threadId) {
-          setCodexThreadId(message.threadId)
-          return
-        }
-
-        if (message.type === "status") {
-          if (message.status === "thinking") setConnectionStatus("thinking")
-          else if (message.status === "executing") setConnectionStatus("executing")
-          else if (message.status === "connecting") setConnectionStatus("connecting")
-          else if (message.status === "aborted") setConnectionStatus("connected")
-          return
-        }
-
-        if (message.type === "delta" && message.text) {
-          setRunOutput((current) => `${current}${message.text}`)
-          return
-        }
-
-        if (message.type === "tool_call") {
-          setConnectionStatus("executing")
-          setRunOutput((current) => `${current}\n\n[Codex tool] ${message.name || "tool"}\n`)
-          return
-        }
-
-        if (message.type === "turn_complete") {
-          setConnectionStatus("connected")
-          setIsRunningCodexTask(false)
-          if (message.text) setRunOutput(message.text)
-          toast.success("Codex finished the recruiter task")
-          socket.close()
-          return
-        }
-
-        if (message.type === "error") {
-          setConnectionStatus("error")
-          setIsRunningCodexTask(false)
-          setRunOutput(message.message || "Codex app-server session failed.")
-          if (message.fatal) socket.close()
-        }
-      }
-
-      socket.onerror = () => {
-        setConnectionStatus("bridge-missing")
-        setIsRunningCodexTask(false)
-        setRunOutput("Start the Jobraker Codex bridge before running workspace tasks.")
-        toast.error("Codex bridge is required to run workspace tasks")
-      }
-
-      socket.onclose = () => {
-        codexSessionRef.current = null
-        setIsRunningCodexTask(false)
-      }
-    } catch (error) {
-      setConnectionStatus("bridge-missing")
-      setRunOutput(error instanceof Error ? error.message : "The Codex app-server bridge is required to run workspace tasks.")
-      toast.error("Codex bridge is required to run workspace tasks")
-    }
-  }, [codexBridgeWsUrl, codexTask, codexThreadId, selectedModel])
-
-  const handleAbortCodexTask = useCallback(() => {
-    if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
-      codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
-      codexSessionRef.current.close()
-    }
-    setIsRunningCodexTask(false)
-    setConnectionStatus("connected")
-    toast.info("Codex task stopped")
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      if (codexSessionRef.current && codexSessionRef.current.readyState === WebSocket.OPEN) {
-        codexSessionRef.current.send(JSON.stringify({ type: "abort" }))
-        codexSessionRef.current.close()
-      }
-    }
-  }, [])
-
-  const connectionCopy = {
-    checking: "Checking local bridge",
-    disconnected: "Ready to connect",
-    connecting: "Opening ChatGPT sign-in",
-    connected: "Connected to Codex",
-    thinking: "Codex thinking",
-    executing: "Codex executing",
-    "bridge-missing": "Local bridge needed",
-    "codex-unavailable": "Codex CLI unavailable",
-    error: "Connection error",
-  }[connectionStatus]
-
-  return (
-    <div className="space-y-5">
-      <div className="overflow-hidden rounded-3xl border border-primary/40 bg-[radial-gradient(circle_at_top_left,rgba(35,255,35,0.18),transparent_34%),linear-gradient(135deg,rgba(6,18,9,0.96),rgba(0,0,0,0.98))] p-5 text-white shadow-[0_18px_55px_rgba(35,255,35,0.08)]">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-              <Terminal className="size-3.5" />
-              Codex Connect
-            </div>
-            <div>
-              <h3 className="text-2xl font-semibold tracking-tight">Connect with ChatGPT, run with Codex CLI</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                Jobraker uses your local Codex app-server session so Plus-plan users can sign in through ChatGPT, choose a GPT model, and stream recruiter workspace tasks without placing Codex credentials in the browser.
-              </p>
-            </div>
-          </div>
-          <div className={cn(
-            "inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
-            connectionStatus === "connected"
-              ? "border-primary/45 bg-primary/15 text-primary"
-              : connectionStatus === "bridge-missing" || connectionStatus === "codex-unavailable"
-                ? "border-amber-400/45 bg-amber-400/10 text-amber-200"
-                : "border-white/15 bg-white/8 text-white/70"
-          )}>
-            {connectionStatus === "connected" ? <CheckCircle2 className="size-3.5" /> : connectionStatus === "connecting" || connectionStatus === "checking" || connectionStatus === "thinking" || connectionStatus === "executing" ? <Loader2 className="size-3.5 animate-spin" /> : <AlertTriangle className="size-3.5" />}
-            {connectionCopy}
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Codex model</label>
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="border-white/15 bg-black/45 text-white">
-                <SelectValue placeholder="Choose a model" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="gpt-5.6">GPT-5.6</SelectItem>
-                <SelectItem value="gpt-5.6-sol">GPT-5.6 Sol</SelectItem>
-                <SelectItem value="gpt-5.4">GPT-5.4</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            type="button"
-            onClick={handleConnectCodex}
-            disabled={connectionStatus === "connecting"}
-            className="h-10 bg-primary text-black hover:bg-primary/90"
-          >
-            {connectionStatus === "connecting" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Link2 className="mr-2 size-4" />}
-            Connect Codex
-          </Button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h4 className="text-sm font-semibold">Run a Recruiter Task with Codex</h4>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              The bridge starts `codex app-server` locally, then streams a real Codex session using the signed-in ChatGPT/Codex CLI account.
-            </p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={checkCodexStatus}>
-            <RefreshCw className="mr-2 size-3.5" />
-            Check status
-          </Button>
-        </div>
-
-        <div className="mt-4 grid gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Recruiter task</label>
-            <textarea
-              value={codexTask}
-              onChange={(event) => setCodexTask(event.target.value)}
-              className="min-h-24 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            />
-          </div>
-          {isRunningCodexTask ? (
-            <Button
-              type="button"
-              onClick={handleAbortCodexTask}
-              variant="destructive"
-              className="w-full"
-            >
-              <X className="mr-2 size-4" />
-              Stop Codex Run
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={handleRunCodexTask}
-              disabled={!codexTask.trim()}
-              className="w-full bg-primary text-black hover:bg-primary/90"
-            >
-              <Terminal className="mr-2 size-4" />
-              Run Recruiter Task with Codex
-            </Button>
-          )}
-        </div>
-
-        {runOutput && (
-          <pre className="mt-4 max-h-52 overflow-auto rounded-xl border border-border bg-black p-3 text-xs leading-5 text-primary">
-            {runOutput}
-          </pre>
-        )}
-      </div>
-
-      <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-5 text-amber-200">
-        The browser never receives Codex tokens or AWS keys. Start the local bridge on your machine when you want the hosted app to stream Codex app-server sessions.
-      </div>
-    </div>
-  )
+  return <GeminiSettings dialogOpen={dialogOpen} />
 }
 
 // --- Tools Library Settings ---
@@ -1311,7 +1028,7 @@ function NoteTaggingSettings({ dialogOpen }: { dialogOpen: boolean }) {
 // --- Code Mode Settings ---
 
 type AgentStatus = { installed: boolean; signedIn: boolean }
-type CodeModeAgentStatus = { claude: AgentStatus; codex: AgentStatus }
+type CodeModeAgentStatus = { claude: AgentStatus }
 
 function AgentStatusRow({
   name,
@@ -1418,7 +1135,6 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
   }, [])
 
   const anyReady = status?.claude.installed && status?.claude.signedIn
-    || status?.codex.installed && status?.codex.signedIn
 
   if (loading) {
     return (
@@ -1434,15 +1150,12 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
       <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
         <p>
           <strong className="text-foreground">Code mode</strong> lets the assistant delegate coding tasks
-          to <strong className="text-foreground">Claude Code</strong> or <strong className="text-foreground">Codex</strong> running
+          to <strong className="text-foreground">Claude Code</strong> running
           on your machine. Pick the agent inline from the composer; the assistant calls it via
           <code className="mx-1 rounded bg-muted px-1 py-0.5 text-[11px]">acpx</code>
           and streams results back into chat.
         </p>
-        <p>
-          Requires an active <strong className="text-foreground">Claude Code</strong> subscription or
-          a <strong className="text-foreground">ChatGPT/Codex</strong> subscription. You can have one or both.
-        </p>
+        <p>Requires an active <strong className="text-foreground">Claude Code</strong> subscription.</p>
       </div>
 
       <div className="space-y-2">
@@ -1463,12 +1176,6 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
             installLink="https://claude.ai/code"
             signInCommand="claude login"
             status={status?.claude ?? null}
-          />
-          <AgentStatusRow
-            name="Codex"
-            installLink="https://developers.openai.com/codex/cli"
-            signInCommand="codex login"
-            status={status?.codex ?? null}
           />
         </div>
       </div>
@@ -1491,8 +1198,7 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
         <div className="rounded-md border border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2.5 flex items-start gap-2 text-xs">
           <AlertTriangle className="size-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
           <div className="text-amber-900 dark:text-amber-200">
-            Neither Claude Code nor Codex is ready. Install at least one and sign in with a subscription
-            account, then click Re-check.
+            Claude Code is not ready. Install it and sign in with a subscription account, then click Re-check.
           </div>
         </div>
       )}
