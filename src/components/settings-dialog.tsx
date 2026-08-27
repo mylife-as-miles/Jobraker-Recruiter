@@ -1129,7 +1129,6 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
   }, [])
 
   const anyReady = status?.claude.installed && status?.claude.signedIn
-    || status?.codex.installed && status?.codex.signedIn
 
   if (loading) {
     return (
@@ -1193,8 +1192,7 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
         <div className="rounded-md border border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2.5 flex items-start gap-2 text-xs">
           <AlertTriangle className="size-4 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
           <div className="text-amber-900 dark:text-amber-200">
-            Neither Claude Code nor Codex is ready. Install at least one and sign in with a subscription
-            account, then click Re-check.
+            Claude Code is not ready. Install it and sign in with a subscription account, then click Re-check.
           </div>
         </div>
       )}
