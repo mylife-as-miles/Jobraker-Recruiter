@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { AlertTriangleIcon, CheckIcon, ChevronDownIcon, RefreshCwIcon, Terminal, XIcon } from "lucide-react";
+import { AlertTriangleIcon, CheckIcon, ChevronDownIcon, Terminal, XIcon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 import { ToolCallPart } from "@x/shared/dist/message.js";
 import { ToolPermissionMetadata } from "@x/shared/dist/runs.js";
@@ -21,7 +21,6 @@ export type PermissionRequestProps = ComponentProps<"div"> & {
   onApproveSession?: () => void;
   onApproveAlways?: () => void;
   onDeny?: () => void;
-  onSwitchAgent?: (newAgent: 'claude' | 'codex') => void;
   isProcessing?: boolean;
   response?: 'approve' | 'deny' | null;
   permission?: z.infer<typeof ToolPermissionMetadata>;
@@ -42,7 +41,6 @@ export const PermissionRequest = ({
   onApproveSession,
   onApproveAlways,
   onDeny,
-  onSwitchAgent,
   isProcessing = false,
   response = null,
   permission,
