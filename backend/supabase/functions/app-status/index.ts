@@ -37,7 +37,6 @@ Deno.serve(async (req) => {
       case 'codeMode:checkAgentStatus':
         return json({
           claude: { installed: false, signedIn: false },
-          codex: { installed: false, signedIn: false },
           webFallback: true,
           reason: 'Browser deployment does not expose local coding-agent binaries. Recruiter AI runs through the Gemini Edge Function.',
         })
