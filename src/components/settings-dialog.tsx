@@ -1022,7 +1022,7 @@ function NoteTaggingSettings({ dialogOpen }: { dialogOpen: boolean }) {
 // --- Code Mode Settings ---
 
 type AgentStatus = { installed: boolean; signedIn: boolean }
-type CodeModeAgentStatus = { claude: AgentStatus; codex: AgentStatus }
+type CodeModeAgentStatus = { claude: AgentStatus }
 
 function AgentStatusRow({
   name,
@@ -1145,15 +1145,12 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
       <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
         <p>
           <strong className="text-foreground">Code mode</strong> lets the assistant delegate coding tasks
-          to <strong className="text-foreground">Claude Code</strong> or <strong className="text-foreground">Codex</strong> running
+          to <strong className="text-foreground">Claude Code</strong> running
           on your machine. Pick the agent inline from the composer; the assistant calls it via
           <code className="mx-1 rounded bg-muted px-1 py-0.5 text-[11px]">acpx</code>
           and streams results back into chat.
         </p>
-        <p>
-          Requires an active <strong className="text-foreground">Claude Code</strong> subscription or
-          a <strong className="text-foreground">ChatGPT/Codex</strong> subscription. You can have one or both.
-        </p>
+        <p>Requires an active <strong className="text-foreground">Claude Code</strong> subscription.</p>
       </div>
 
       <div className="space-y-2">
@@ -1174,12 +1171,6 @@ function CodeModeSettings({ dialogOpen }: { dialogOpen: boolean }) {
             installLink="https://claude.ai/code"
             signInCommand="claude login"
             status={status?.claude ?? null}
-          />
-          <AgentStatusRow
-            name="Codex"
-            installLink="https://developers.openai.com/codex/cli"
-            signInCommand="codex login"
-            status={status?.codex ?? null}
           />
         </div>
       </div>
