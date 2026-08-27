@@ -56,16 +56,13 @@ export const PermissionRequest = ({
     : null;
   const filePermission = permission?.kind === "file" ? permission : null;
 
-  // Detect acpx coding-agent invocations so we can show the agent identity and
-  // offer a one-click swap-and-retry.
-  const acpxAgent: 'claude' | 'codex' | null = (() => {
+  // Detect Claude Code invocations so the permission UI can show the agent identity.
+  const acpxAgent: 'claude' | null = (() => {
     if (!command) return null;
-    const match = command.match(/\bacpx\b[\s\S]*?\b(claude|codex)\b\s+exec\b/);
-    return match ? (match[1] as 'claude' | 'codex') : null;
+    const match = command.match(/\bacpx\b[\s\S]*?\bclaude\b\s+exec\b/);
+    return match ? 'claude' : null;
   })();
-  const otherAgent: 'claude' | 'codex' | null = acpxAgent === 'claude' ? 'codex' : acpxAgent === 'codex' ? 'claude' : null;
-  const agentDisplay = acpxAgent === 'claude' ? 'Claude Code' : acpxAgent === 'codex' ? 'Codex' : null;
-  const otherDisplay = otherAgent === 'claude' ? 'Claude Code' : otherAgent === 'codex' ? 'Codex' : null;
+  const agentDisplay = acpxAgent ? 'Claude Code' : null;
 
   const isResponded = response !== null;
   const isApproved = response === 'approve';
@@ -221,18 +218,6 @@ export const PermissionRequest = ({
               <XIcon className="size-4" />
               Deny
             </Button>
-            {otherAgent && otherDisplay && onSwitchAgent && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onSwitchAgent(otherAgent)}
-                disabled={isProcessing}
-                className="flex-1"
-              >
-                <RefreshCwIcon className="size-4" />
-                Use {otherDisplay} instead
-              </Button>
-            )}
           </div>
         )}
       </div>
