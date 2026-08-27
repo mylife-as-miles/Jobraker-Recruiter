@@ -198,7 +198,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     if (Object.keys(modelsCatalog).length === 0) return
     setProviderConfigs(prev => {
       const next = { ...prev }
-      const cloudProviders: LlmProviderFlavor[] = ["openai", "anthropic", "google"]
+      const cloudProviders: LlmProviderFlavor[] = ["anthropic", "google"]
       for (const provider of cloudProviders) {
         const models = modelsCatalog[provider]
         if (models?.length && !next[provider].model) {
@@ -1272,7 +1272,6 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
   // Step 2 (BYOK path): LLM Setup
   const renderLlmSetupStep = () => {
     const primaryProviders: Array<{ id: LlmProviderFlavor; name: string; description: string }> = [
-      { id: "openai", name: "OpenAI", description: "Use your OpenAI API key" },
       { id: "anthropic", name: "Anthropic", description: "Use your Anthropic API key" },
       { id: "google", name: "Gemini", description: "Use your Google AI Studio key" },
       { id: "ollama", name: "Ollama (Local)", description: "Run a local model via Ollama" },
@@ -1281,7 +1280,6 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     const moreProviders: Array<{ id: LlmProviderFlavor; name: string; description: string }> = [
       { id: "openrouter", name: "OpenRouter", description: "Access multiple models with one key" },
       { id: "aigateway", name: "AI Gateway (Vercel)", description: "Use Vercel's AI Gateway" },
-      { id: "openai-compatible", name: "OpenAI-Compatible", description: "Local or hosted OpenAI-compatible API" },
     ]
 
     const isMoreProvider = moreProviders.some(p => p.id === llmProvider)
@@ -1476,7 +1474,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
           {showApiKey && (
             <div className="space-y-2">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {llmProvider === "openai-compatible" ? "API Key (optional)" : "API Key"}
+                {false ? "API Key (optional)" : "API Key"}
               </span>
               <Input
                 type="password"
@@ -1496,7 +1494,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
                 placeholder={
                   llmProvider === "ollama"
                     ? "http://localhost:11434"
-                    : llmProvider === "openai-compatible"
+                    : false
                       ? "http://localhost:1234/v1"
                       : "https://ai-gateway.vercel.sh/v1"
                 }
