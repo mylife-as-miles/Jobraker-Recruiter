@@ -536,7 +536,7 @@ export const getCodeModeCommandLabel = (tool: ToolCall): string | null => {
   if (tool.name !== 'executeCommand') return null
   const input = normalizeToolInput(tool.input) as Record<string, unknown> | undefined
   const command = typeof input?.command === 'string' ? input.command : ''
-  const match = command.match(/\bacpx\b[\s\S]*?\b(claude|codex)\b\s+exec\b/)
+  const match = command.match(/\bacpx\b[\s\S]*?(claude)\s+exec\b/)
   if (!match) return null
   if (tool.status === 'error') return `Couldn't complete the task`
   if (tool.status === 'completed') return `Completed the task`
