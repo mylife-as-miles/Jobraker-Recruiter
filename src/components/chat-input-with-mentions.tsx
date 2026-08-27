@@ -63,17 +63,15 @@ const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024 // 10MB
 
 
 const providerDisplayNames: Record<string, string> = {
-  openai: 'OpenAI',
   anthropic: 'Anthropic',
   google: 'Gemini',
   ollama: 'Ollama',
   openrouter: 'OpenRouter',
   aigateway: 'AI Gateway',
-  'openai-compatible': 'OpenAI-Compatible',
   'jobraker-recruiter': 'Jobraker Recruiter',
 }
 
-type ProviderName = "openai" | "anthropic" | "google" | "openrouter" | "aigateway" | "ollama" | "openai-compatible" | "jobraker-recruiter"
+type ProviderName = "anthropic" | "google" | "openrouter" | "aigateway" | "ollama" | "jobraker-recruiter"
 
 interface ConfiguredModel {
   provider: ProviderName
