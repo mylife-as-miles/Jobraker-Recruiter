@@ -240,7 +240,13 @@ function AppearanceSettings() {
   )
 }
 
-// --- Gemini Settings UI ---\n\nfunction ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {\n  return <GeminiSettings dialogOpen={dialogOpen} />\n}\n\n// --- Tools Library Settings ---
+// --- Gemini Settings UI ---
+
+function ModelSettings({ dialogOpen }: { dialogOpen: boolean }) {
+  return <GeminiSettings dialogOpen={dialogOpen} />
+}
+
+// --- Tools Library Settings ---
 
 interface ToolkitInfo {
   slug: string
